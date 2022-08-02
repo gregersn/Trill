@@ -6,6 +6,7 @@ from src.tokens import TokenType
 
 T = TypeVar('T')
 
+
 class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]):
     average: bool = False
 
@@ -18,7 +19,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
     def visit_Literal_Expression(self, expression: expression.Literal):
         return expression.value
-    
+
     def evaluate(self, expression: expression.Expression):
         return expression.accept(self)
 
@@ -26,40 +27,53 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         right = self.evaluate(expression.right)
 
         if expression.operator.token_type == TokenType.MINUS:
-            return - right
+            return -right
 
         if expression.operator.token_type == TokenType.DICE:
-            return (right + 1)  / 2
-        
+            start = 0 if expression.operator.lexeme == 'z' else 1
+            if self.average:
+                return (right + start) / 2
+            else:
+                return random.randint(start, right)
+
         if expression.operator.token_type == TokenType.SUM:
             return sum(right)
-        
+
         if expression.operator.token_type == TokenType.SIGN:
             if right == 0:
                 return 0
             return right / abs(right)
 
         raise Exception(f"Unknown operator {expression.operator.token_type} in unary expression")
-    
+
     def visit_Binary_Expression(self, expression: expression.Binary):
+        if expression.operator.token_type == TokenType.SAMPLES:
+            return [self.evaluate(expression.right) for _ in range(int(self.evaluate(expression.left)))]
+
         left = self.evaluate(expression.left)
         right = self.evaluate(expression.right)
 
         if expression.operator.token_type == TokenType.DICE:
+            start = 0 if expression.operator.lexeme == 'z' else 1
             if self.average:
-                return [(right + 1)  / 2,] * int(left)
+                return [
+                    (right + start) / 2,
+                ] * int(left)
             else:
-                return [random.randint(1, right) for _ in range(left)]
+                return [random.randint(start, right) for _ in range(left)]
+
+        if expression.operator.token_type == TokenType.UNION:
+            return left + right
 
         if expression.operator.token_type == TokenType.PLUS:
             return left + right
-        
+
         if expression.operator.token_type == TokenType.MINUS:
             return left - right
-        
+
         if expression.operator.token_type == TokenType.DIVIDE:
             return left // right
-        
+
         if expression.operator.token_type == TokenType.MULTIPLY:
             return left * right
 

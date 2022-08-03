@@ -1,6 +1,6 @@
-from src.tokenizer import Scanner
-from src.tokens import TokenType
-from src.error import had_error
+from troll.tokenizer import Scanner
+from troll.tokens import TokenType
+from troll.error import had_error
 
 from typing import List
 

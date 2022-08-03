@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from src.ast import expression
+from troll.ast import expression
 from .base import T, Visitor
 
 class StatementVisitor(Visitor[T]):

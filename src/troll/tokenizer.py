@@ -1,4 +1,4 @@
-from src.tokens import TokenType
+from troll.tokens import TokenType
 from .tokens import Token
 from typing import Any, List
 from .error import error

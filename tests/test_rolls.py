@@ -1,10 +1,10 @@
 import pytest
 from typing import Any, List
-from src.interpreter import Interpreter
-from src.parser import Parser
-from src.tokenizer import Scanner
-from src.tokens import Token, TokenType
-from src.ast.printer import ASTPrinter
+from troll.interpreter import Interpreter
+from troll.parser import Parser
+from troll.tokenizer import Scanner
+from troll.tokens import Token, TokenType
+from troll.ast.printer import ASTPrinter
 
 
 def pytest_generate_tests(metafunc):

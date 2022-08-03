@@ -1,7 +1,7 @@
-from src.tokens import TokenType
-from src.tokenizer import Token
-from src.ast.printer import ASTPrinter
-from src.ast.expression import Binary, Grouping, Literal, Unary
+from troll.tokens import TokenType
+from troll.tokenizer import Token
+from troll.ast.printer import ASTPrinter
+from troll.ast.expression import Binary, Grouping, Literal, Unary
 
 def test_printer():
     expression = [Binary(

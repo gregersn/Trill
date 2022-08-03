@@ -1,8 +1,8 @@
 from typing import TypeVar, List, Any
 import random
-from src.ast import expression
-from src.ast import statement
-from src.tokens import TokenType
+from troll.ast import expression
+from troll.ast import statement
+from troll.tokens import TokenType
 
 T = TypeVar('T')
 

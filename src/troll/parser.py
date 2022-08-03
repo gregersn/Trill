@@ -1,8 +1,8 @@
 from typing import List
 
-from src.tokens import Token, TokenType
-from src.ast import expression
-from src.ast import statement
+from troll.tokens import Token, TokenType
+from troll.ast import expression
+from troll.ast import statement
 
 # Precedence: Order of evaluation of operators. Higher precendence evaulated first.
 # Associativity: In series of same operator, order of operation, from left or from right

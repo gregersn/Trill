@@ -66,7 +66,7 @@ class Parser:
     def expression_statement(self) -> statement.Statement:
         # exprStatement -> expression ";"|EOF ;
         expr = self.parse_expression()
-        if self.check(TokenType.EOF):
+        if not self.is_at_end():
             self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
         return statement.Expression(expr)
 

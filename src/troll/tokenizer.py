@@ -50,6 +50,9 @@ class Scanner:
 
     def scan_token(self):
         character = self.advance()
+        if character == ';':
+            return self.add_token(TokenType.SEMICOLON)
+
         if character == '+':
             return self.add_token(TokenType.PLUS)
 

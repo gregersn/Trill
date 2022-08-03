@@ -1,6 +1,6 @@
+from typing import Any, List
 from troll.tokens import TokenType
 from .tokens import Token
-from typing import Any, List
 from .error import error
 from .reserved import KEYWORDS
 
@@ -42,11 +42,11 @@ class Scanner:
             self.advance()
 
         text = self.source[self._start:self._current]
-        type = KEYWORDS.get(text)
-        if type == None:
-            type = TokenType.IDENTIFIER
+        _type = KEYWORDS.get(text)
+        if _type is None:
+            _type = TokenType.IDENTIFIER
 
-        self.add_token(type)
+        self.add_token(_type)
 
     def scan_token(self):
         character = self.advance()
@@ -88,7 +88,7 @@ class Scanner:
             return self.number()
 
         if character.isalpha():
-            self.identifier()
+            return self.identifier()
 
         error(self._line, f"Unexpected character: {character}")
 
@@ -116,9 +116,10 @@ class Scanner:
         return self.source[self._current]
 
     def peek_next(self):
-        if self._current + 1 >= len(self.source): return '\0'
+        if self._current + 1 >= len(self.source):
+            return '\0'
         return self.source[self._current + 1]
 
-    def add_token(self, type: TokenType, literal: Any = None):
+    def add_token(self, _type: TokenType, literal: Any = None):
         text = self.source[self._start:self._current]
-        self.tokens.append(Token(type, text, literal, self._line))
+        self.tokens.append(Token(_type, text, literal, self._line))

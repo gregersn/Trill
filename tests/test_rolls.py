@@ -7,9 +7,9 @@ from troll.tokens import Token, TokenType
 from troll.ast.printer import ASTPrinter
 
 
-def pytest_generate_tests(metafunc):
-    funcarglist = metafunc.cls.params[metafunc.function.__name__]
-    argnames = sorted(funcarglist[0])
+def pytest_generate_tests(metafunc: pytest.Metafunc):
+    funcarglist: List[Any] = metafunc.cls.params[metafunc.function.__name__]
+    argnames: List[str] = sorted(funcarglist[0])
     metafunc.parametrize(argnames, [[funcargs[name] for name in argnames] for funcargs in funcarglist])
 
 

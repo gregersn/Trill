@@ -1,3 +1,4 @@
+"""Parser code."""
 from typing import List
 
 from troll.tokens import Token, TokenType
@@ -10,6 +11,7 @@ from troll.ast import statement
 
 
 class Parser:
+    """Basic Troll parser."""
     tokens: List[Token]
     current: int = 0
 
@@ -25,9 +27,10 @@ class Parser:
     def previous(self):
         return self.tokens[self.current - 1]
 
-    def check(self, type: TokenType):
-        if self.is_at_end(): return False
-        return self.peek().token_type == type
+    def check(self, _type: TokenType):
+        if self.is_at_end():
+            return False
+        return self.peek().token_type == _type
 
     def advance(self):
         if not self.is_at_end():
@@ -36,8 +39,8 @@ class Parser:
         return self.previous()
 
     def match(self, *types: TokenType):
-        for t in types:
-            if self.check(t):
+        for _type in types:
+            if self.check(_type):
                 self.advance()
                 return True
         return False
@@ -45,8 +48,9 @@ class Parser:
     def error(self, token: Token, message: str):
         return Exception(f"{str(token)}: {message}")
 
-    def consume(self, type: TokenType, message: str):
-        if self.check(type): return self.advance()
+    def consume(self, _type: TokenType, message: str):
+        if self.check(_type):
+            return self.advance()
         raise self.error(self.peek(), message)
 
     def program(self):

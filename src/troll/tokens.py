@@ -34,8 +34,8 @@ class Token:
     literal: Any
     line: int
 
-    def __init__(self, type: TokenType, lexeme: str, literal: Any, line: int):
-        self.token_type = type
+    def __init__(self, _type: TokenType, lexeme: str, literal: Any, line: int):
+        self.token_type = _type
         self.lexeme = lexeme
         self.literal = literal
         self.line = line

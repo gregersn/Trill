@@ -16,9 +16,12 @@ requires-python = ">=3.8"
 authors = [
   { name = "Greger Stolt Nilsen", email = "gregersn@gmail.com" },
 ]
+dependencies = [
+  "typer==0.6.1"
+]
 
 [project.scripts]
-troll = "troll.cli:main"
+troll = "troll.main:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -26,4 +29,4 @@ include = ["troll"]
 namespaces = false
 
 [tool.pylint."MESSAGE CONTROL"]
-disable="missing-function-docstring,missing-class-docstring"
+disable="missing-function-docstring,missing-class-docstring,invalid-name,too-few-public-methods"

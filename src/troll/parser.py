@@ -1,13 +1,10 @@
 """Parser code."""
 from typing import List
 
-from troll.tokens import Token, TokenType
-from troll.ast import expression
-from troll.ast import statement
-
-# Precedence: Order of evaluation of operators. Higher precendence evaulated first.
-# Associativity: In series of same operator, order of operation, from left or from right
-# Separate rule for each precedence level.
+from .ast.base import Node
+from .tokens import Token, TokenType
+from .ast import expression
+from .ast import statement
 
 
 class Parser:
@@ -19,6 +16,7 @@ class Parser:
         self.tokens = tokens
 
     def is_at_end(self):
+        # Check if end of source is reached.
         return self.peek().token_type == TokenType.EOF
 
     def peek(self, lookahead: int = 0):
@@ -52,6 +50,12 @@ class Parser:
         if self.check(_type):
             return self.advance()
         raise self.error(self.peek(), message)
+
+    def parse(self):
+        statements: List[Node] = []
+        while not self.is_at_end():
+            statements.append(self.parse_statement())
+        return statements
 
     def program(self):
         # program -> statement* EOF ;
@@ -91,12 +95,6 @@ class Parser:
 
         return expr
 
-    def parse(self):
-        statements: List[statement.Statement] = []
-        while not self.is_at_end():
-            statements.append(self.parse_statement())
-        return statements
-
     def comparison(self) -> expression.Expression:
         expr = self.term()
         while self.match(TokenType.LESS_THAN, TokenType.GREATER_THAN):
@@ -135,8 +133,8 @@ class Parser:
 
     def diceroll(self) -> expression.Expression:
         # A single die
-        if self.check(TokenType.DICE):
-            operator = self.advance()
+        if self.match(TokenType.DICE):
+            operator = self.previous()
             right = self.primary()
             return expression.Unary(operator, right)
 
@@ -151,7 +149,7 @@ class Parser:
         return expr
 
     def primary(self):
-        if self.match(TokenType.NUMBER):
+        if self.match(TokenType.INTEGER, TokenType.FLOAT):
             return expression.Literal(self.previous().literal)
 
         if self.match(TokenType.LPAREN):

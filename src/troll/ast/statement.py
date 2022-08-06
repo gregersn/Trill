@@ -1,6 +1,7 @@
+"""Statements."""
 from dataclasses import dataclass
 
-from troll.ast import expression
+from . import expression
 from .base import T, Visitor, Node
 
 

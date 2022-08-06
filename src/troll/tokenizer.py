@@ -1,7 +1,9 @@
+"""Troll tokenizer."""
 from typing import Any, List
-from troll.tokens import TokenType
+
+from .tokens import TokenType
 from .tokens import Token
-from .error import error
+from . import error
 from .reserved import KEYWORDS
 
 
@@ -15,6 +17,7 @@ class Scanner:
 
     def __init__(self, source: str):
         self.source = source
+        error.reset()
 
     def scan_tokens(self) -> List[Token]:
         self.tokens = []
@@ -22,33 +25,41 @@ class Scanner:
             self._start = self._current
             self.scan_token()
 
-        self.tokens.append(Token(TokenType.EOF, "", None, self._line))
+        self.tokens.append(Token(TokenType.EOF, "\\0", None, self._line))
         return self.tokens
 
     def number(self):
+        """Scan numbers."""
+
+        is_float = False
+
         while self.peek().isdigit():
             self.advance()
 
         if self.peek() == '.' and self.peek_next().isdigit():
+            is_float = True
             self.advance()
 
             while self.peek().isdigit():
                 self.advance()
 
-        self.add_token(TokenType.NUMBER, int(self.source[self._start:self._current], 10))
+        if is_float:
+            self.add_token(TokenType.FLOAT, float(self.source[self._start:self._current]))
+        else:
+            self.add_token(TokenType.INTEGER, int(self.source[self._start:self._current], 10))
 
     def identifier(self):
+        """Identifiers are either custom names or reserved keywords."""
         while self.peek().isalpha() or self.peek().isdigit():
             self.advance()
 
         text = self.source[self._start:self._current]
-        _type = KEYWORDS.get(text)
-        if _type is None:
-            _type = TokenType.IDENTIFIER
-
-        self.add_token(_type)
+        _type = KEYWORDS.get(text, TokenType.IDENTIFIER)
+        self.add_token(_type, text)
 
     def scan_token(self):
+        """Scan for the next token."""
+
         character = self.advance()
         if character == ';':
             return self.add_token(TokenType.SEMICOLON)
@@ -80,7 +91,7 @@ class Scanner:
         if character.lower() == 'd' or character.lower() == 'z':
             return self.add_token(TokenType.DICE, character)
 
-        if character == ' ':
+        if character in [' ', '\t', '\r']:
             return
 
         if character == '\n':
@@ -93,7 +104,7 @@ class Scanner:
         if character.isalpha():
             return self.identifier()
 
-        error(self._line, f"Unexpected character: {character}")
+        error.error(self._line, f"Unexpected character: {character}")
 
     def is_at_end(self):
         return self._current >= len(self.source)

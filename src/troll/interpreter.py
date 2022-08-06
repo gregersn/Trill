@@ -1,8 +1,10 @@
+"""Troll interpreter."""
 from typing import TypeVar, List, Any
 import random
-from troll.ast import expression
-from troll.ast import statement
-from troll.tokens import TokenType
+from .ast import expression
+from .ast import statement
+from .ast.base import Node
+from .tokens import TokenType
 
 T = TypeVar('T')
 
@@ -10,7 +12,7 @@ T = TypeVar('T')
 class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]):
     average: bool = False
 
-    def interpret(self, exprs: List[expression.Expression], average: bool = False):
+    def interpret(self, exprs: List[Node], average: bool = False):
         self.average = average
         output: List[Any] = []
         for expr in exprs:

@@ -1,8 +1,8 @@
 """Syntax tree tests."""
-from troll.tokens import TokenType
-from troll.tokenizer import Token
-from troll.ast.printer import ASTPrinter
-from troll.ast.expression import Binary, Grouping, Literal, Unary
+from trill.tokens import TokenType
+from trill.tokenizer import Token
+from trill.ast.printer import ASTPrinter
+from trill.ast.expression import Binary, Grouping, Literal, Unary
 
 
 def test_printer():

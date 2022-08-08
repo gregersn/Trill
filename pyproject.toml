@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "troll"
+version = "0.0.1"
+description = "Python implementation of the Troll language"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operation System :: OS Independent",
+]
+requires-python = ">=3.8"
+authors = [
+  { name = "Greger Stolt Nilsen", email = "gregersn@gmail.com" },
+]
+dependencies = [
+  "typer==0.6.1"
+]
+
+[project.scripts]
+troll = "troll.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["troll"]
+namespaces = false
+
+[tool.pylint."MESSAGE CONTROL"]
+disable="missing-function-docstring,missing-class-docstring,invalid-name,too-few-public-methods"

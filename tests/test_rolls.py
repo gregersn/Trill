@@ -26,9 +26,15 @@ rolls: List[str] = [
     '10#(sum 5d6)',
     '3d6 U 3d8',
     '3d6;10d4',
+    'd6 U 3d8',
+    '3d6 U d8',
+    '{1, 2, 1}',
+    '{}',
+    '{d6, 3d8}',
+    '1..6',
 ]
 
-tokenizer_results = [1, 2, 3, 7, 6, 3, 4, 3, 4, 7, 6, 2, 3, 5, 8, 7, 7]
+tokenizer_results = [1, 2, 3, 7, 6, 3, 4, 3, 4, 7, 6, 2, 3, 5, 8, 7, 7, 6, 6, 7, 2, 8, 3]
 
 parse_results: List[List[str]] = [
     ['6'],
@@ -48,6 +54,12 @@ parse_results: List[List[str]] = [
     ['(# 10 (group (sum (d 5 6))))'],
     ['(U (d 3 6) (d 3 8))'],
     ['(d 3 6)', '(d 10 4)'],
+    ['(U (d 6) (d 3 8))'],
+    ['(U (d 3 6) (d 8))'],
+    ['([1, 2, 1])'],
+    ['[]'],
+    ['([(d 6), (d 3 8)])'],
+    ['(.. 1 6)'],
 ]
 
 interpret_results: List[List[Any]] = [
@@ -68,6 +80,12 @@ interpret_results: List[List[Any]] = [
     [[5 * 3.5] * 10],
     [[3.5, 3.5, 3.5, 4.5, 4.5, 4.5]],
     [[3.5] * 3, [2.5] * 10],
+    [[3.5, 4.5, 4.5, 4.5]],
+    [[3.5, 3.5, 3.5, 4.5]],
+    [[1, 2, 1]],
+    [[]],
+    [[3.5, 4.5, 4.5, 4.5]],
+    [[1, 2, 3, 4, 5, 6]],
 ]
 
 
@@ -76,10 +94,18 @@ def test_answers(result_list: List[Any]):
     assert len(result_list) == len(rolls)
 
 
+@pytest.mark.parametrize("roll,result", zip(rolls, tokenizer_results))
+def test_tokenizer(roll: str, result: int):
+    scanner = Scanner(roll)
+    res = scanner.scan_tokens()
+    assert len(res) == result + 1, roll
+
+
 @pytest.mark.parametrize("roll,result", zip(rolls, parse_results))
 def test_parse(roll: str, result: List[str]):
     scanner = Scanner(roll)
-    parser = Parser(scanner.scan_tokens())
+    tokens = scanner.scan_tokens()
+    parser = Parser(tokens)
     expression = parser.parse()
     res = ASTPrinter().print(expression)
     assert res == result, roll
@@ -92,10 +118,3 @@ def test_interpret(roll: str, result: List[Any]):
     expression = parser.parse()
     res = Interpreter().interpret(expression, average=True)
     assert res == result, roll
-
-
-@pytest.mark.parametrize("roll,result", zip(rolls, tokenizer_results))
-def test_tokenizer(roll: str, result: int):
-    scanner = Scanner(roll)
-    res = scanner.scan_tokens()
-    assert len(res) == result + 1, roll

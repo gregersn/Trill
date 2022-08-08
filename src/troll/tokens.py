@@ -11,7 +11,10 @@ class TokenType(Enum):
     DIVIDE = '/'
     LPAREN = '('
     RPAREN = ')'
+    LBRACKET = '{',
+    RBRACKET = '}',
     SAMPLES = '#'
+    COMMA = ','
     DICE = 'dice'  # Dice that goes from 1 to N
     ZERODICE = 'zerodice'  # Dice that goes from zero to N-1
     INTEGER = 'integer'
@@ -23,6 +26,8 @@ class TokenType(Enum):
     SIGN = 'sign'
     MODULO = 'mod'
     EOF = 'eof'
+
+    RANGE = 'range'
 
     EQUAL = '='
     LESS_THAN = '<'

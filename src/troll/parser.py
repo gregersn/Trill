@@ -106,7 +106,7 @@ class Parser:
 
     def term(self) -> expression.Expression:
         expr = self.factor()
-        while self.match(TokenType.MINUS, TokenType.PLUS, TokenType.SAMPLES, TokenType.UNION):
+        while self.match(TokenType.MINUS, TokenType.PLUS, TokenType.SAMPLES, TokenType.UNION, TokenType.RANGE):
             operator = self.previous()
             right = self.factor()
             expr = expression.Binary(expr, operator, right)

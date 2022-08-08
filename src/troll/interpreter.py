@@ -64,7 +64,16 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             else:
                 return [random.randint(start, right) for _ in range(left)]
 
+        if expr.operator.token_type == TokenType.RANGE:
+            return list(range(left, right + 1))
+
         if expr.operator.token_type == TokenType.UNION:
+            if isinstance(left, int | float):
+                left = [left]
+
+            if isinstance(right, int | float):
+                right = [right]
+
             return left + right
 
         if expr.operator.token_type == TokenType.PLUS:

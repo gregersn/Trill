@@ -82,11 +82,24 @@ class Scanner:
         if character == ')':
             return self.add_token(TokenType.RPAREN)
 
+        if character == '{':
+            return self.add_token(TokenType.LBRACKET)
+
+        if character == '}':
+            return self.add_token(TokenType.RBRACKET)
+
+        if character == ',':
+            return self.add_token(TokenType.COMMA)
+
         if character == '#':
             return self.add_token(TokenType.SAMPLES)
 
         if character == 'U':
             return self.add_token(TokenType.UNION)
+
+        if character == '.' and self.peek() == '.':
+            self.advance()
+            return self.add_token(TokenType.RANGE)
 
         if character.lower() == 'd' or character.lower() == 'z':
             return self.add_token(TokenType.DICE, character)

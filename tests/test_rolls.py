@@ -3,10 +3,10 @@ from typing import Any, List
 
 import pytest
 
-from troll.interpreter import Interpreter
-from troll.parser import Parser
-from troll.tokenizer import Scanner
-from troll.ast.printer import ASTPrinter
+from trill.interpreter import Interpreter
+from trill.parser import Parser
+from trill.tokenizer import Scanner
+from trill.ast.printer import ASTPrinter
 
 rolls: List[str] = [
     '6',

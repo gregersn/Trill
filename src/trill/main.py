@@ -1,4 +1,4 @@
-"""Run Troll dice rolling."""
+"""Run Trill dice roller."""
 import typer
 from .tokens import TokenType
 from .tokenizer import Token, Scanner
@@ -7,7 +7,7 @@ from .parser import Parser
 from .ast.printer import ASTPrinter
 from .ast.expression import Binary, Grouping, Literal, Unary
 
-app = typer.Typer()
+app = typer.Typer(add_completion=False)
 
 
 def main():
@@ -22,7 +22,13 @@ def main():
 
 
 @app.command()
-def run(source: str, average: bool = False):
+def run(
+        source: str = typer.Argument(...),
+        average: bool = typer.Option(False, help="Use average dice values."),
+):
+    """
+    Use SOURCE to roll dice according to the Troll language.
+    """
     tokens = Scanner(source).scan_tokens()
     parsed = Parser(tokens).parse()
     result = Interpreter().interpret(parsed, average=average)

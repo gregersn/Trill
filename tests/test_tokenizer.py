@@ -1,7 +1,7 @@
 """Test the scanner."""
-from troll.tokenizer import Scanner
-from troll.tokens import TokenType
-from troll.error import had_error
+from trill.tokenizer import Scanner
+from trill.tokens import TokenType
+from trill.error import had_error
 
 
 def test_roll_one():

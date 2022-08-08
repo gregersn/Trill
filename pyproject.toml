@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "troll"
+name = "trill"
 version = "0.0.1"
 description = "Python implementation of the Troll language"
 readme = "README.md"
@@ -21,11 +21,11 @@ dependencies = [
 ]
 
 [project.scripts]
-troll = "troll.main:app"
+trill = "trill.main:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["troll"]
+include = ["trill"]
 namespaces = false
 
 [tool.pylint."MESSAGE CONTROL"]

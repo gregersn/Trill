@@ -1,6 +1,6 @@
 import pytest
-from troll.tokenizer import Scanner
-from troll import error
+from trill.tokenizer import Scanner
+from trill import error
 
 
 @pytest.mark.parametrize("source, is_error", [("36d%4", True), ("4$", True), ("4d6", False)])

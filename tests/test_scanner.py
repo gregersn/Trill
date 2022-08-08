@@ -1,7 +1,7 @@
 """Test that the scanner handles miscellanous stuff."""
 import pytest
-from troll.tokenizer import Scanner
-from troll.tokens import TokenType, Token
+from trill.tokenizer import Scanner
+from trill.tokens import TokenType, Token
 
 number_tests = [
     ('4', Token(TokenType.INTEGER, '4', 4, 0)),

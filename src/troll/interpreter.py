@@ -68,10 +68,10 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             return list(range(left, right + 1))
 
         if expr.operator.token_type == TokenType.UNION:
-            if isinstance(left, int | float):
+            if isinstance(left, (int, float)):
                 left = [left]
 
-            if isinstance(right, int | float):
+            if isinstance(right, (int, float)):
                 right = [right]
 
             return left + right

@@ -44,3 +44,6 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
 
     def visit_Expression_Statement(self, stmt: statement.Expression) -> str:
         return self.evaluate(stmt.expression)
+
+    def visit_List_Expression(self, expr: expression.List) -> str:
+        return f'(collection {" ".join([self.evaluate(v) for v in expr.value])})'

@@ -1,5 +1,5 @@
 """Parser code."""
-from typing import List
+from typing import Any, List
 
 from .ast.base import Node
 from .tokens import Token, TokenType
@@ -156,5 +156,14 @@ class Parser:
             expr = self.parse_expression()
             self.consume(TokenType.RPAREN, "Expect ')' after espression.")
             return expression.Grouping(expr)
+
+        if self.match(TokenType.LBRACKET):
+            elements: List[Any] = []
+            while not self.check(TokenType.RBRACKET):
+                elements.append(self.parse_expression())
+                if not self.check(TokenType.RBRACKET):
+                    self.consume(TokenType.COMMA, "Expect ',' to separate elements.")
+            self.consume(TokenType.RBRACKET, "Missing '}' to close list.")
+            return expression.List(elements)
 
         raise Exception(f"Unexpected token: {self.peek()}")

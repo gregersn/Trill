@@ -36,7 +36,7 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] arithmetic on single value (+ - * / mod)
 - [x] _sgn_, sign of number
 - [x] _sum_, add up values in collection
-- [ ] _count_ values in collection
+- [x] _count_ values in collection
 - [x] Union of collections (U or @)
 - [x] Union of elements { }
 - [ ] _min_ and _max_ in collection

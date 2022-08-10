@@ -31,9 +31,11 @@ rolls: List[str] = [
     '1..6',
     '{}',
     '{1, 2, 3}',
+    'count {}',
+    'count {1, 2, 3}',
 ]
 
-tokenizer_results = [1, 2, 3, 7, 6, 3, 4, 3, 4, 7, 6, 2, 3, 5, 8, 7, 7, 6, 6, 3, 2, 7]
+tokenizer_results = [1, 2, 3, 7, 6, 3, 4, 3, 4, 7, 6, 2, 3, 5, 8, 7, 7, 6, 6, 3, 2, 7, 3, 8]
 
 parse_results: List[List[str]] = [
     ['6'],
@@ -58,6 +60,8 @@ parse_results: List[List[str]] = [
     ['(.. 1 6)'],
     ['(collection )'],
     ['(collection 1 2 3)'],
+    ['(count (collection ))'],
+    ['(count (collection 1 2 3))'],
 ]
 
 interpret_results: List[List[Any]] = [
@@ -83,6 +87,8 @@ interpret_results: List[List[Any]] = [
     [[1, 2, 3, 4, 5, 6]],
     [[]],
     [[1, 2, 3]],
+    [0],
+    [3],
 ]
 
 

@@ -123,7 +123,7 @@ class Parser:
         return expr
 
     def unary(self) -> expression.Expression:
-        operators = [TokenType.MINUS, TokenType.SUM, TokenType.SIGN]
+        operators = [TokenType.MINUS, TokenType.SUM, TokenType.SIGN, TokenType.COUNT]
         if self.match(*operators):
             operator = self.previous()
             right = self.unary()

@@ -36,4 +36,9 @@ testcases: List[TestCase] = [
     TestCase('{1, 2, 3}', 7, ['(collection 1 2 3)'], [[1, 2, 3]]),
     TestCase('count {}', 3, ['(count (collection ))'], [0]),
     TestCase('count {1, 2, 3}', 8, ['(count (collection 1 2 3))'], [3]),
+    TestCase('{d6, 3d8}', 8, ['(collection (d 6) (d 3 8))'], [[3.5, 4.5, 4.5, 4.5]]),
+    TestCase('{1..6}', 5, ['(collection (.. 1 6))'], [[1, 2, 3, 4, 5, 6]]),
+    TestCase('choose {-1, 0, 1}', 9, ['(choose (collection (- 1) 0 1))'], [0]),
+    TestCase('{1..10} pick 3', 7, ['(pick (collection (.. 1 10)) 3)'], [[5, 6, 7]]),
+    TestCase('{1, 2, 3} pick 4', 9, ['(pick (collection 1 2 3) 4)'], [[1, 2, 3]])
 ]

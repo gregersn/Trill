@@ -6,4 +6,6 @@ KEYWORDS = {
     'sgn': TokenType.SIGN,
     'sum': TokenType.SUM,
     'count': TokenType.COUNT,
+    'choose': TokenType.CHOOSE,
+    'pick': TokenType.PICK,
 }

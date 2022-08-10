@@ -12,6 +12,9 @@ T = TypeVar('T')
 class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]):
     average: bool = False
 
+    def __repr__(self):
+        return "<Interpreter >"
+
     def interpret(self, exprs: List[Node], average: bool = False):
         self.average = average
         output: List[Any] = []
@@ -46,6 +49,12 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
                 return 0
             return right / abs(right)
 
+        if expr.operator.token_type == TokenType.CHOOSE:
+            if self.average:
+                return right[len(right) // 2]
+
+            return random.choice(right)
+
         if expr.operator.token_type == TokenType.COUNT:
             return len(right)
 
@@ -79,6 +88,15 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
             return left + right
 
+        if expr.operator.token_type == TokenType.PICK:
+            samples = min(len(left), right)
+            if self.average:
+                offset = samples // 2
+                mid_point = len(left) // 2
+                return left[mid_point - offset:mid_point + offset + 1]
+
+            return random.sample(left, samples)
+
         if expr.operator.token_type == TokenType.PLUS:
             return left + right
 
@@ -97,7 +115,15 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         return self.evaluate(expr.expression)
 
     def visit_List_Expression(self, expr: expression.List):
-        return [self.evaluate(v) for v in expr.value]
+        output: List[Any] = []
+        for value in expr.value:
+            res = self.evaluate(value)
+            if isinstance(res, list):
+                output += res
+            else:
+                output.append(res)
+
+        return output
 
     def visit_Expression_Statement(self, stmt: statement.Expression):
         return self.evaluate(stmt.expression)

@@ -11,8 +11,8 @@ class TokenType(Enum):
     DIVIDE = '/'
     LPAREN = '('
     RPAREN = ')'
-    LBRACKET = '{',
-    RBRACKET = '}',
+    LBRACKET = '{'
+    RBRACKET = '}'
     SAMPLES = '#'
     COMMA = ','
     DICE = 'dice'  # Dice that goes from 1 to N
@@ -25,6 +25,8 @@ class TokenType(Enum):
     SUM = 'sum'
     SIGN = 'sign'
     COUNT = 'count'
+    PICK = 'pick'
+    CHOOSE = 'choose'
     MODULO = 'mod'
     EOF = 'eof'
 

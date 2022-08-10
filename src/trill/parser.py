@@ -15,6 +15,9 @@ class Parser:
     def __init__(self, tokens: List[Token]):
         self.tokens = tokens
 
+    def __repr__(self):
+        return f"<Parser {self.current} / {len(self.tokens)}>"
+
     def is_at_end(self):
         # Check if end of source is reached.
         return self.peek().token_type == TokenType.EOF
@@ -106,7 +109,14 @@ class Parser:
 
     def term(self) -> expression.Expression:
         expr = self.factor()
-        while self.match(TokenType.MINUS, TokenType.PLUS, TokenType.SAMPLES, TokenType.UNION, TokenType.RANGE):
+        while self.match(
+                TokenType.MINUS,
+                TokenType.PLUS,
+                TokenType.SAMPLES,
+                TokenType.UNION,
+                TokenType.RANGE,
+                TokenType.PICK,
+        ):
             operator = self.previous()
             right = self.factor()
             expr = expression.Binary(expr, operator, right)
@@ -123,7 +133,7 @@ class Parser:
         return expr
 
     def unary(self) -> expression.Expression:
-        operators = [TokenType.MINUS, TokenType.SUM, TokenType.SIGN, TokenType.COUNT]
+        operators = [TokenType.MINUS, TokenType.SUM, TokenType.SIGN, TokenType.COUNT, TokenType.CHOOSE]
         if self.match(*operators):
             operator = self.previous()
             right = self.unary()

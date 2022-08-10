@@ -33,5 +33,6 @@ def test_interpret(roll: str, result: List[Any]):
     scanner = Scanner(roll)
     parser = Parser(scanner.scan_tokens())
     expression = parser.parse()
+    res = Interpreter().interpret(expression)
     res = Interpreter().interpret(expression, average=True)
     assert res == result, roll

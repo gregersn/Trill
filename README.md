@@ -45,8 +45,8 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [ ] _least_ n and _largest_ n values in collection
 - [ ] m samples of e ( # )
 - [x] range of values ( .. )
-- [ ] _choose_ value from collection
-- [ ] _pick_ n values from collection e
+- [x] _choose_ value from collection
+- [x] _pick_ n values from collection e
 - [ ] filters (< <= > >= = =/=)
 - [ ] _drop_ elements
 - [ ] _keep_ elements

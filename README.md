@@ -47,7 +47,7 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] range of values ( .. )
 - [x] _choose_ value from collection
 - [x] _pick_ n values from collection e
-- [ ] filters (< <= > >= = =/=)
+- [x] filters (< <= > >= = =/=)
 - [ ] _drop_ elements
 - [ ] _keep_ elements
 - [ ] multiset difference ( -- )

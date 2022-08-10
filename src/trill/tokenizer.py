@@ -61,6 +61,25 @@ class Scanner:
         """Scan for the next token."""
 
         character = self.advance()
+        if character == '<':
+            if self.peek() == '=':
+                self.advance()
+                return self.add_token(TokenType.LESS_THAN_OR_EQUAL, '<=')
+            return self.add_token(TokenType.LESS_THAN, '<')
+
+        if character == '>':
+            if self.peek() == '=':
+                self.advance()
+                return self.add_token(TokenType.GREATER_THAN_OR_EQUAL, '>=')
+            return self.add_token(TokenType.GREATER_THAN, '>')
+
+        if character == '=':
+            if self.peek() == '/' and self.peek_next() == '=':
+                self.advance()
+                self.advance()
+                return self.add_token(TokenType.NOT_EQUAL, '=/=')
+            return self.add_token(TokenType.EQUAL, '=')
+
         if character == ';':
             return self.add_token(TokenType.SEMICOLON, character)
 

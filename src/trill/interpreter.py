@@ -127,6 +127,35 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         if expr.operator.token_type == TokenType.MULTIPLY:
             return left * right
 
+        if expr.operator.token_type in [
+                TokenType.LESS_THAN,
+                TokenType.LESS_THAN_OR_EQUAL,
+                TokenType.GREATER_THAN,
+                TokenType.GREATER_THAN_OR_EQUAL,
+                TokenType.EQUAL,
+                TokenType.NOT_EQUAL,
+        ]:
+            if isinstance(right, (int, float)):
+                right = [right]
+
+            if expr.operator.token_type == TokenType.LESS_THAN_OR_EQUAL:
+                return [v for v in right if left <= v]
+
+            if expr.operator.token_type == TokenType.LESS_THAN:
+                return [v for v in right if left < v]
+
+            if expr.operator.token_type == TokenType.GREATER_THAN_OR_EQUAL:
+                return [v for v in right if left >= v]
+
+            if expr.operator.token_type == TokenType.GREATER_THAN:
+                return [v for v in right if left > v]
+
+            if expr.operator.token_type == TokenType.EQUAL:
+                return [v for v in right if left == v]
+
+            if expr.operator.token_type == TokenType.NOT_EQUAL:
+                return [v for v in right if left != v]
+
         raise Exception(f"Unknown operator {expr.operator.token_type} in binary expression")
 
     def visit_Grouping_Expression(self, expr: expression.Grouping):

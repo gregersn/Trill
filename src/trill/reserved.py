@@ -12,4 +12,6 @@ KEYWORDS = {
     'max': TokenType.MAX,
     'minimal': TokenType.MINIMAL,
     'maximal': TokenType.MAXIMAL,
+    'drop': TokenType.DROP,
+    'keep': TokenType.KEEP,
 }

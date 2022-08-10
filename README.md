@@ -48,8 +48,8 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _choose_ value from collection
 - [x] _pick_ n values from collection e
 - [x] filters (< <= > >= = =/=)
-- [ ] _drop_ elements
-- [ ] _keep_ elements
+- [x] _drop_ elements
+- [x] _keep_ elements
 - [ ] multiset difference ( -- )
 - [ ] remove duplicates ( _different_ )
 - [ ] conditional ( if-then-else )

@@ -120,7 +120,7 @@ class Scanner:
             self.advance()
             return self.add_token(TokenType.RANGE, '..')
 
-        if character.lower() == 'd' or character.lower() == 'z':
+        if (character.lower() == 'd' or character.lower() == 'z') and not self.peek().isalpha():
             return self.add_token(TokenType.DICE, character)
 
         if character in [' ', '\t', '\r']:

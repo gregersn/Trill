@@ -28,6 +28,8 @@ class TokenType(Enum):
     PICK = 'pick'
     CHOOSE = 'choose'
     MODULO = 'mod'
+    DROP = 'drop'
+    KEEP = 'keep'
 
     MIN = 'min'
     MAX = 'max'

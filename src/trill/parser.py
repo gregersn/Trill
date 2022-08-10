@@ -116,6 +116,8 @@ class Parser:
                 TokenType.UNION,
                 TokenType.RANGE,
                 TokenType.PICK,
+                TokenType.DROP,
+                TokenType.KEEP,
         ):
             operator = self.previous()
             right = self.factor()

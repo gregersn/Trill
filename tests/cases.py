@@ -54,4 +54,8 @@ testcases: List[TestCase] = [
     TestCase('3 <= d6', 4, ['(<= 3 (d 6))'], [[3.5]]),
     TestCase('3 <= 5 >= d6', 6, ['(<= 3 (>= 5 (d 6)))'], [[3.5]]),
     TestCase('3 <= 5 >= d4', 6, ['(<= 3 (>= 5 (d 4)))'], [[]]),
+    TestCase('{1, 2, 3, 4} drop 3', 11, ['(drop (collection 1 2 3 4) 3)'], [[1, 2, 4]]),
+    TestCase('d6 drop d6', 5, ['(drop (d 6) (d 6))'], [[]]),
+    TestCase('{1, 2, 3, 4} keep 3', 11, ['(keep (collection 1 2 3 4) 3)'], [[3]]),
+    TestCase('d6 keep d6', 5, ['(keep (d 6) (d 6))'], [[3.5]]),
 ]

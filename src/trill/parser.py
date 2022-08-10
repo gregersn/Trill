@@ -100,7 +100,7 @@ class Parser:
 
     def comparison(self) -> expression.Expression:
         expr = self.term()
-        while self.match(TokenType.LESS_THAN, TokenType.GREATER_THAN):
+        while False:  # Currently not in use.
             operator = self.previous()
             right = self.term()
             expr = expression.Binary(expr, operator, right)
@@ -149,7 +149,23 @@ class Parser:
             right = self.unary()
             return expression.Unary(operator, right)
 
-        return self.diceroll()
+        return self.filter()
+
+    def filter(self):
+        expr = self.diceroll()
+        while self.match(
+                TokenType.LESS_THAN,
+                TokenType.GREATER_THAN,
+                TokenType.LESS_THAN_OR_EQUAL,
+                TokenType.GREATER_THAN_OR_EQUAL,
+                TokenType.EQUAL,
+                TokenType.NOT_EQUAL,
+        ):
+            operator = self.previous()
+            right = self.parse_expression()
+            expr = expression.Binary(expr, operator, right)
+
+        return expr
 
     def diceroll(self) -> expression.Expression:
         # A single die

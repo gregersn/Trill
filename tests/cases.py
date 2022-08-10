@@ -45,4 +45,13 @@ testcases: List[TestCase] = [
     TestCase('max {1, 2, 3}', 8, ['(max (collection 1 2 3))'], [3]),
     TestCase('minimal {1, 1, 2, 3, 3}', 12, ['(minimal (collection 1 1 2 3 3))'], [[1, 1]]),
     TestCase('maximal {1, 1, 2, 3, 3}', 12, ['(maximal (collection 1 1 2 3 3))'], [[3, 3]]),
+    TestCase('2 <= {1, 2, 3}', 9, ['(<= 2 (collection 1 2 3))'], [[2, 3]]),
+    TestCase('2 < {1, 2, 3}', 9, ['(< 2 (collection 1 2 3))'], [[3]]),
+    TestCase('2 >= {1, 2, 3}', 9, ['(>= 2 (collection 1 2 3))'], [[1, 2]]),
+    TestCase('2 > {1, 2, 3}', 9, ['(> 2 (collection 1 2 3))'], [[1]]),
+    TestCase('2 = {1, 2, 3}', 9, ['(= 2 (collection 1 2 3))'], [[2]]),
+    TestCase('2 =/= {1, 2, 3}', 9, ['(=/= 2 (collection 1 2 3))'], [[1, 3]]),
+    TestCase('3 <= d6', 4, ['(<= 3 (d 6))'], [[3.5]]),
+    TestCase('3 <= 5 >= d6', 6, ['(<= 3 (>= 5 (d 6)))'], [[3.5]]),
+    TestCase('3 <= 5 >= d4', 6, ['(<= 3 (>= 5 (d 4)))'], [[]]),
 ]

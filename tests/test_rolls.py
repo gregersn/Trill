@@ -29,9 +29,11 @@ rolls: List[str] = [
     'd6 U 3d8',
     '3d6 U d8',
     '1..6',
+    '{}',
+    '{1, 2, 3}',
 ]
 
-tokenizer_results = [1, 2, 3, 7, 6, 3, 4, 3, 4, 7, 6, 2, 3, 5, 8, 7, 7, 6, 6, 3]
+tokenizer_results = [1, 2, 3, 7, 6, 3, 4, 3, 4, 7, 6, 2, 3, 5, 8, 7, 7, 6, 6, 3, 2, 7]
 
 parse_results: List[List[str]] = [
     ['6'],
@@ -54,6 +56,8 @@ parse_results: List[List[str]] = [
     ['(U (d 6) (d 3 8))'],
     ['(U (d 3 6) (d 8))'],
     ['(.. 1 6)'],
+    ['(collection )'],
+    ['(collection 1 2 3)'],
 ]
 
 interpret_results: List[List[Any]] = [
@@ -77,6 +81,8 @@ interpret_results: List[List[Any]] = [
     [[3.5, 4.5, 4.5, 4.5]],
     [[3.5, 3.5, 3.5, 4.5]],
     [[1, 2, 3, 4, 5, 6]],
+    [[]],
+    [[1, 2, 3]],
 ]
 
 

@@ -37,8 +37,8 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _sgn_, sign of number
 - [x] _sum_, add up values in collection
 - [ ] _count_ values in collection
-- [ ] Union of collections (U or @)
-- [ ] Union of elements { }
+- [x] Union of collections (U or @)
+- [x] Union of elements { }
 - [ ] _min_ and _max_ in collection
 - [ ] all _minimal_ and all _maximal_ values in collection
 - [ ] _median_ value in collection

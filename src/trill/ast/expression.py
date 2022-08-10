@@ -27,6 +27,11 @@ class Grouping(Expression):
 
 
 @dataclass
+class List(Expression):
+    value: Any
+
+
+@dataclass
 class Literal(Expression):
     value: Any
 

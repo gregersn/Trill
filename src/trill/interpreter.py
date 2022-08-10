@@ -93,5 +93,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
     def visit_Grouping_Expression(self, expr: expression.Grouping):
         return self.evaluate(expr.expression)
 
+    def visit_List_Expression(self, expr: expression.List):
+        return [self.evaluate(v) for v in expr.value]
+
     def visit_Expression_Statement(self, stmt: statement.Expression):
         return self.evaluate(stmt.expression)

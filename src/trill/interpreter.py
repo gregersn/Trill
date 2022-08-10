@@ -46,6 +46,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
                 return 0
             return right / abs(right)
 
+        if expr.operator.token_type == TokenType.COUNT:
+            return len(right)
+
         raise Exception(f"Unknown operator {expr.operator.token_type} in unary expression")
 
     def visit_Binary_Expression(self, expr: expression.Binary):

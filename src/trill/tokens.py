@@ -24,6 +24,7 @@ class TokenType(Enum):
     UNION = 'union'
     SUM = 'sum'
     SIGN = 'sign'
+    COUNT = 'count'
     MODULO = 'mod'
     EOF = 'eof'
 

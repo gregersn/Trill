@@ -133,7 +133,17 @@ class Parser:
         return expr
 
     def unary(self) -> expression.Expression:
-        operators = [TokenType.MINUS, TokenType.SUM, TokenType.SIGN, TokenType.COUNT, TokenType.CHOOSE]
+        operators = [
+            TokenType.MINUS,
+            TokenType.SUM,
+            TokenType.SIGN,
+            TokenType.COUNT,
+            TokenType.CHOOSE,
+            TokenType.MIN,
+            TokenType.MAX,
+            TokenType.MINIMAL,
+            TokenType.MAXIMAL,
+        ]
         if self.match(*operators):
             operator = self.previous()
             right = self.unary()

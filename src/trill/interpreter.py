@@ -55,8 +55,26 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
             return random.choice(right)
 
+        if expr.operator.token_type == TokenType.MIN:
+            return min(right)
+
+        if expr.operator.token_type == TokenType.MAX:
+            return max(right)
+
         if expr.operator.token_type == TokenType.COUNT:
             return len(right)
+
+        if expr.operator.token_type == TokenType.MINIMAL:
+            min_value = min(right)
+            return [
+                min_value,
+            ] * right.count(min_value)
+
+        if expr.operator.token_type == TokenType.MAXIMAL:
+            max_value = max(right)
+            return [
+                max_value,
+            ] * right.count(max_value)
 
         raise Exception(f"Unknown operator {expr.operator.token_type} in unary expression")
 

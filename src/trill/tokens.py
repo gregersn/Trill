@@ -28,6 +28,11 @@ class TokenType(Enum):
     PICK = 'pick'
     CHOOSE = 'choose'
     MODULO = 'mod'
+
+    MIN = 'min'
+    MAX = 'max'
+    MINIMAL = 'minimal'
+    MAXIMAL = 'maximal'
     EOF = 'eof'
 
     RANGE = 'range'

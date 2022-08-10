@@ -40,5 +40,9 @@ testcases: List[TestCase] = [
     TestCase('{1..6}', 5, ['(collection (.. 1 6))'], [[1, 2, 3, 4, 5, 6]]),
     TestCase('choose {-1, 0, 1}', 9, ['(choose (collection (- 1) 0 1))'], [0]),
     TestCase('{1..10} pick 3', 7, ['(pick (collection (.. 1 10)) 3)'], [[5, 6, 7]]),
-    TestCase('{1, 2, 3} pick 4', 9, ['(pick (collection 1 2 3) 4)'], [[1, 2, 3]])
+    TestCase('{1, 2, 3} pick 4', 9, ['(pick (collection 1 2 3) 4)'], [[1, 2, 3]]),
+    TestCase('min {1, 2, 3}', 8, ['(min (collection 1 2 3))'], [1]),
+    TestCase('max {1, 2, 3}', 8, ['(max (collection 1 2 3))'], [3]),
+    TestCase('minimal {1, 1, 2, 3, 3}', 12, ['(minimal (collection 1 1 2 3 3))'], [[1, 1]]),
+    TestCase('maximal {1, 1, 2, 3, 3}', 12, ['(maximal (collection 1 1 2 3 3))'], [[3, 3]]),
 ]

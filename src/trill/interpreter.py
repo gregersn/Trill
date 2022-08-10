@@ -115,6 +115,22 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
             return random.sample(left, samples)
 
+        if expr.operator.token_type == TokenType.DROP:
+            if isinstance(left, (int, float)):
+                left = [left]
+
+            if isinstance(right, (int, float)):
+                right = [right]
+            return [x for x in left if x not in right]
+
+        if expr.operator.token_type == TokenType.KEEP:
+            if isinstance(left, (int, float)):
+                left = [left]
+
+            if isinstance(right, (int, float)):
+                right = [right]
+            return [x for x in left if x in right]
+
         if expr.operator.token_type == TokenType.PLUS:
             return left + right
 

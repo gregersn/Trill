@@ -1,4 +1,6 @@
 """Run Trill dice roller."""
+from pathlib import Path
+from typing import Union
 import typer
 from .tokens import TokenType
 from .tokenizer import Token, Scanner
@@ -23,12 +25,17 @@ def main():
 
 @app.command()
 def run(
-        source: str = typer.Argument(...),
+        source: str = typer.Argument(..., help="Source of dice rolls."),
         average: bool = typer.Option(False, help="Use average dice values."),
 ):
     """
     Use SOURCE to roll dice according to the Troll language.
+    If SOURCE resolves to an existing file, it will be read and used.
     """
+    if Path(source).exists():
+        with open(Path(source), 'r', encoding="utf-8") as f:
+            source = f.read()
+
     tokens = Scanner(source).scan_tokens()
     parsed = Parser(tokens).parse()
     result = Interpreter().interpret(parsed, average=average)

@@ -41,7 +41,7 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] Union of elements { }
 - [x] _min_ and _max_ in collection
 - [x] all _minimal_ and all _maximal_ values in collection
-- [ ] _median_ value in collection
+- [x] _median_ value in collection
 - [ ] _least_ n and _largest_ n values in collection
 - [ ] m samples of e ( # )
 - [x] range of values ( .. )
@@ -50,8 +50,8 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] filters (< <= > >= = =/=)
 - [x] _drop_ elements
 - [x] _keep_ elements
-- [ ] multiset difference ( -- )
-- [ ] remove duplicates ( _different_ )
+- [x] multiset difference ( -- )
+- [x] remove duplicates ( _different_ )
 - [ ] conditional ( if-then-else )
 - [ ] probability ( ?p )
 - [ ] logical and ( & )

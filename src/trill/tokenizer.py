@@ -93,6 +93,9 @@ class Scanner:
             return self.add_token(TokenType.MULTIPLY, character)
 
         if character == '-':
+            if self.peek() == '-':
+                self.advance()
+                return self.add_token(TokenType.MINUSMINUS, '--')
             return self.add_token(TokenType.MINUS, character)
 
         if character == '(':

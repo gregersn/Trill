@@ -57,5 +57,9 @@ testcases: List[TestCase] = [
     TestCase('{1, 2, 3, 4} drop 3', 11, ['(drop (collection 1 2 3 4) 3)'], [[1, 2, 4]]),
     TestCase('d6 drop d6', 5, ['(drop (d 6) (d 6))'], [[]]),
     TestCase('{1, 2, 3, 4} keep 3', 11, ['(keep (collection 1 2 3 4) 3)'], [[3]]),
+    TestCase('{2, 2, 3} drop {2, 4}', None, None, [[3]]),
     TestCase('d6 keep d6', 5, ['(keep (d 6) (d 6))'], [[3.5]]),
+    TestCase('{2, 2, 3} -- {2, 4}', 13, ['(-- (collection 2 2 3) (collection 2 4))'], [[2, 3]]),
+    TestCase('different {2, 1, 2}', 8, ['(different (collection 2 1 2))'], [[1, 2]]),
+    TestCase('median {2, 6, 23}', 8, ['(median (collection 2 6 23))'], [6])
 ]

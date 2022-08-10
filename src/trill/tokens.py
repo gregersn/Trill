@@ -4,49 +4,54 @@ from typing import Any
 
 
 class TokenType(Enum):
-    # Artihmetic
-    PLUS = '+'
-    MINUS = '-'
-    MULTIPLY = '*'
-    DIVIDE = '/'
-    LPAREN = '('
-    RPAREN = ')'
+    COMMA = ','
+    SEMICOLON = ';'
+
     LBRACKET = '{'
     RBRACKET = '}'
-    SAMPLES = '#'
-    COMMA = ','
-    DICE = 'dice'  # Dice that goes from 1 to N
-    ZERODICE = 'zerodice'  # Dice that goes from zero to N-1
-    INTEGER = 'integer'
-    FLOAT = 'float'
+    LPAREN = '('
+    RPAREN = ')'
 
-    IDENTIFIER = 'identifier'
-    UNION = 'union'
-    SUM = 'sum'
-    SIGN = 'sign'
-    COUNT = 'count'
-    PICK = 'pick'
-    CHOOSE = 'choose'
+    DIVIDE = '/'
+    MINUS = '-'
+    MULTIPLY = '*'
+    PLUS = '+'
     MODULO = 'mod'
-    DROP = 'drop'
-    KEEP = 'keep'
-
-    MIN = 'min'
-    MAX = 'max'
-    MINIMAL = 'minimal'
-    MAXIMAL = 'maximal'
-    EOF = 'eof'
-
-    RANGE = 'range'
 
     EQUAL = '='
-    LESS_THAN = '<'
     GREATER_THAN = '>'
-    LESS_THAN_OR_EQUAL = '<='
     GREATER_THAN_OR_EQUAL = '>='
+    LESS_THAN = '<'
+    LESS_THAN_OR_EQUAL = '<='
+    MINUSMINUS = '--'
     NOT_EQUAL = '=/='
+    SAMPLES = '#'
 
-    SEMICOLON = ';'
+    FLOAT = 'float'
+    INTEGER = 'integer'
+    IDENTIFIER = 'identifier'
+    SIGN = 'sign'
+
+    DICE = 'dice'  # Dice that goes from 1 to N
+    ZERODICE = 'zerodice'  # Dice that goes from zero to N-1
+
+    COUNT = 'count'
+    DIFFERENT = 'different'
+    MAX = 'max'
+    MAXIMAL = 'maximal'
+    MEDIAN = 'median'
+    MIN = 'min'
+    MINIMAL = 'minimal'
+    SUM = 'sum'
+
+    CHOOSE = 'choose'
+    DROP = 'drop'
+    KEEP = 'keep'
+    PICK = 'pick'
+    RANGE = 'range'
+    UNION = 'union'
+
+    EOF = 'eof'
 
 
 class Token:

@@ -62,44 +62,44 @@ class Scanner:
 
         character = self.advance()
         if character == ';':
-            return self.add_token(TokenType.SEMICOLON)
+            return self.add_token(TokenType.SEMICOLON, character)
 
         if character == '+':
-            return self.add_token(TokenType.PLUS)
+            return self.add_token(TokenType.PLUS, character)
 
         if character == '/':
-            return self.add_token(TokenType.DIVIDE)
+            return self.add_token(TokenType.DIVIDE, character)
 
         if character == '*':
-            return self.add_token(TokenType.MULTIPLY)
+            return self.add_token(TokenType.MULTIPLY, character)
 
         if character == '-':
-            return self.add_token(TokenType.MINUS)
+            return self.add_token(TokenType.MINUS, character)
 
         if character == '(':
-            return self.add_token(TokenType.LPAREN)
+            return self.add_token(TokenType.LPAREN, character)
 
         if character == ')':
-            return self.add_token(TokenType.RPAREN)
+            return self.add_token(TokenType.RPAREN, character)
 
         if character == '{':
-            return self.add_token(TokenType.LBRACKET)
+            return self.add_token(TokenType.LBRACKET, character)
 
         if character == '}':
-            return self.add_token(TokenType.RBRACKET)
+            return self.add_token(TokenType.RBRACKET, character)
 
         if character == ',':
-            return self.add_token(TokenType.COMMA)
+            return self.add_token(TokenType.COMMA, character)
 
         if character == '#':
-            return self.add_token(TokenType.SAMPLES)
+            return self.add_token(TokenType.SAMPLES, character)
 
-        if character == 'U':
-            return self.add_token(TokenType.UNION)
+        if character in ('U', '@'):
+            return self.add_token(TokenType.UNION, character)
 
         if character == '.' and self.peek() == '.':
             self.advance()
-            return self.add_token(TokenType.RANGE)
+            return self.add_token(TokenType.RANGE, '..')
 
         if character.lower() == 'd' or character.lower() == 'z':
             return self.add_token(TokenType.DICE, character)

@@ -76,6 +76,13 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
                 max_value,
             ] * right.count(max_value)
 
+        if expr.operator.token_type == TokenType.MEDIAN:
+            mid_point = len(right) // 2
+            return list(sorted(right))[mid_point]
+
+        if expr.operator.token_type == TokenType.DIFFERENT:
+            return list(set(right))
+
         raise Exception(f"Unknown operator {expr.operator.token_type} in unary expression")
 
     def visit_Binary_Expression(self, expr: expression.Binary):
@@ -130,6 +137,20 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             if isinstance(right, (int, float)):
                 right = [right]
             return [x for x in left if x in right]
+
+        if expr.operator.token_type == TokenType.MINUSMINUS:
+            if isinstance(left, (int, float)):
+                left = [left]
+
+            if isinstance(right, (int, float)):
+                right = [right]
+
+            output = list(left)
+            for v in right:
+                if v in output:
+                    output.remove(v)
+
+            return output
 
         if expr.operator.token_type == TokenType.PLUS:
             return left + right

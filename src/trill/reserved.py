@@ -2,16 +2,18 @@
 from .tokens import TokenType
 
 KEYWORDS = {
-    'mod': TokenType.MODULO,
-    'sgn': TokenType.SIGN,
-    'sum': TokenType.SUM,
-    'count': TokenType.COUNT,
     'choose': TokenType.CHOOSE,
-    'pick': TokenType.PICK,
-    'min': TokenType.MIN,
-    'max': TokenType.MAX,
-    'minimal': TokenType.MINIMAL,
-    'maximal': TokenType.MAXIMAL,
+    'count': TokenType.COUNT,
+    'different': TokenType.DIFFERENT,
     'drop': TokenType.DROP,
     'keep': TokenType.KEEP,
+    'max': TokenType.MAX,
+    'maximal': TokenType.MAXIMAL,
+    'median': TokenType.MEDIAN,
+    'min': TokenType.MIN,
+    'minimal': TokenType.MINIMAL,
+    'mod': TokenType.MODULO,
+    'pick': TokenType.PICK,
+    'sgn': TokenType.SIGN,
+    'sum': TokenType.SUM,
 }

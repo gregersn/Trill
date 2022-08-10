@@ -110,14 +110,15 @@ class Parser:
     def term(self) -> expression.Expression:
         expr = self.factor()
         while self.match(
-                TokenType.MINUS,
-                TokenType.PLUS,
-                TokenType.SAMPLES,
-                TokenType.UNION,
-                TokenType.RANGE,
-                TokenType.PICK,
                 TokenType.DROP,
                 TokenType.KEEP,
+                TokenType.MINUS,
+                TokenType.MINUSMINUS,
+                TokenType.PICK,
+                TokenType.PLUS,
+                TokenType.RANGE,
+                TokenType.SAMPLES,
+                TokenType.UNION,
         ):
             operator = self.previous()
             right = self.factor()
@@ -136,15 +137,17 @@ class Parser:
 
     def unary(self) -> expression.Expression:
         operators = [
-            TokenType.MINUS,
-            TokenType.SUM,
-            TokenType.SIGN,
-            TokenType.COUNT,
             TokenType.CHOOSE,
-            TokenType.MIN,
+            TokenType.COUNT,
+            TokenType.DIFFERENT,
             TokenType.MAX,
-            TokenType.MINIMAL,
             TokenType.MAXIMAL,
+            TokenType.MEDIAN,
+            TokenType.MIN,
+            TokenType.MINIMAL,
+            TokenType.MINUS,
+            TokenType.SIGN,
+            TokenType.SUM,
         ]
         if self.match(*operators):
             operator = self.previous()

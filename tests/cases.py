@@ -61,5 +61,66 @@ testcases: List[TestCase] = [
     TestCase('d6 keep d6', 5, ['(keep (d 6) (d 6))'], [[3.5]]),
     TestCase('{2, 2, 3} -- {2, 4}', 13, ['(-- (collection 2 2 3) (collection 2 4))'], [[2, 3]]),
     TestCase('different {2, 1, 2}', 8, ['(different (collection 2 1 2))'], [[1, 2]]),
-    TestCase('median {2, 6, 23}', 8, ['(median (collection 2 6 23))'], [6])
+    TestCase('median {2, 6, 23}', 8, ['(median (collection 2 6 23))'], [6]),
+    TestCase('x := d6; x*x', 8, ['(assign x (d 6))', '(* x x)'], [None, 3.5 * 3.5]),
+    TestCase(
+        'x := d6; y := d8; x*x*y*y',
+        17,
+        ['(assign x (d 6))', '(assign y (d 8))', '(* (* (* x x) y) y)'],
+        [None, None, 3.5 * 3.5 * 4.5 * 4.5],
+    ),
+    TestCase(
+        'x := 2; (x := 1; x) U x',
+        13,
+        ['(assign x 2)', '(U (block (assign x 1); x) x)'],
+        [None, [1, 2]],
+    ),
+    TestCase('x := 3d6; x', 7, ['(assign x (d 3 6))', 'x'], [None, [3.5, 3.5, 3.5]]),
+    TestCase(
+        'x := 1; y := 3; if x = y then 2*x else max (x U y)',
+        23,
+        ['(assign x 1)', '(assign y 3)', '(if (= x y) (* 2 x) (max (group (U x y))))'],
+        [None, None, 3],
+    ),
+    TestCase(
+        'x := 2; y := 2; if x = y then 2*x else max (x U y)',
+        23,
+        ['(assign x 2)', '(assign y 2)', '(if (= x y) (* 2 x) (max (group (U x y))))'],
+        [None, None, 4],
+    ),
+    TestCase('?0.9', 2, ['(? 0.9)'], [1]),
+    TestCase('?0.1', 2, ['(? 0.1)'], [[]]),
+    TestCase(
+        'x := 2; y := 3; if x = 2 & y = 3 then 42 else 24',
+        20,
+        ['(assign x 2)', '(assign y 3)', '(if (& (= x 2) (= y 3)) 42 24)'],
+        [None, None, 42],
+    ),
+    TestCase(
+        'x := 3; y := 3; if x = 2 & y = 3 then 42 else 24',
+        20,
+        ['(assign x 3)', '(assign y 3)', '(if (& (= x 2) (= y 3)) 42 24)'],
+        [None, None, 24],
+    ),
+    TestCase('foreach x in 1..3 do x+1', 10, ['(foreach x (.. 1 3) (+ x 1))'], [[2, 3, 4]]),
+    TestCase('repeat x:=d8 until x<8', 9, ['(repeat until (assign x (d 8)) (< x 8))'], [4.5]),
+    TestCase('repeat x:=d8 while x=8', 9, ['(repeat while (assign x (d 8)) (= x 8))'], [4.5]),
+    TestCase(
+        'repeat x:=2d6 until (min x)=/=(max x)',
+        16,
+        ['(repeat until (assign x (d 2 6)) (=/= (group (min x)) (group (max x))))'],
+        [[3.5, 3.5]],
+    ),
+    TestCase(
+        'accumulate x:=d10 while x=10',
+        9,
+        ['(accumulate (assign x (d 10)) (= x 10))'],
+        [[5.5]],
+    ),
+    TestCase(
+        'N := 2; count 5< N#(accumulate x:=d10 while x=10)',
+        20,
+        ['(assign N 2)', '(count (< 5 (# N (group (accumulate (assign x (d 10)) (= x 10))))))'],
+        [None, 2],
+    )
 ]

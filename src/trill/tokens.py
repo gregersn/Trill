@@ -12,11 +12,16 @@ class TokenType(Enum):
     LPAREN = '('
     RPAREN = ')'
 
+    ASSIGN = ':='
+
     DIVIDE = '/'
     MINUS = '-'
     MULTIPLY = '*'
     PLUS = '+'
     MODULO = 'mod'
+
+    AND = '&'
+    NOT = '!'
 
     EQUAL = '='
     GREATER_THAN = '>'
@@ -26,6 +31,8 @@ class TokenType(Enum):
     MINUSMINUS = '--'
     NOT_EQUAL = '=/='
     SAMPLES = '#'
+
+    PROBABILITY = '?'
 
     FLOAT = 'float'
     INTEGER = 'integer'
@@ -50,6 +57,17 @@ class TokenType(Enum):
     PICK = 'pick'
     RANGE = 'range'
     UNION = 'union'
+
+    IF = 'if'
+    THEN = 'then'
+    ELSE = 'else'
+    FOREACH = 'foreach'
+    IN = 'in'
+    DO = 'do'
+    REPEAT = 'repeat'
+    WHILE = 'while'
+    UNTIL = 'until'
+    ACCUMULATE = 'accumulate'
 
     EOF = 'eof'
 

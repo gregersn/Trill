@@ -1,7 +1,6 @@
 """Parser code."""
-from typing import Any, List
+from typing import Any, List, Union
 
-from .ast.base import Node
 from .tokens import Token, TokenType
 from .ast import expression
 from .ast import statement
@@ -55,46 +54,117 @@ class Parser:
         raise self.error(self.peek(), message)
 
     def parse(self):
-        statements: List[Node] = []
+        statements: List[Union[statement.Statement, expression.Expression]] = []
         while not self.is_at_end():
-            statements.append(self.parse_statement())
+            statements.append(self.declaration())
         return statements
 
-    def program(self):
-        # program -> statement* EOF ;
-        ...
-
-    def parse_statement(self) -> statement.Statement:
+    def declaration(self) -> Union[statement.Statement, expression.Expression]:
         # statement -> exprStatement | printStatement;
         # if self.match(TokenType.PRINT):
         #     return self.print_Statement()
+        if self.check(TokenType.IDENTIFIER) and self.peek(1).token_type == TokenType.ASSIGN:
+            return self.declaration_statement()
+        return self.parse_statement()
+
+    def if_expression(self):
+        condition = self.parse_expression()
+        self.consume(TokenType.THEN, "Missing THEN after condition")
+        true_result = self.parse_expression()
+        self.consume(TokenType.ELSE, "Missing ELSE after true result")
+        false_result = self.parse_expression()
+
+        return expression.Conditional(condition, true_result, false_result)
+
+    def foreach_statement(self):
+        iterator = self.primary()
+        self.consume(TokenType.IN, 'Expecting IN')
+        source = self.parse_expression()
+        self.consume(TokenType.DO, "Expected DO")
+        block = self.parse_expression()
+
+        assert isinstance(iterator, expression.Variable)
+
+        return statement.Foreach(iterator, source, block)
+
+    def repeat_expression(self):
+        action = self.assignment()
+        if not self.match(TokenType.WHILE, TokenType.UNTIL):
+            raise Exception("Wtf")
+        condition = self.previous()
+        qualifier = self.parse_expression()
+
+        assert isinstance(action, expression.Assign), action
+
+        return expression.Repeat(condition, action, qualifier)
+
+    def accumulate_expression(self):
+        action = self.assignment()
+        self.consume(TokenType.WHILE, "Expect a clause in accumulation")
+        qualifier = self.parse_expression()
+        assert isinstance(action, expression.Assign)
+        return expression.Accumulate(action, qualifier)
+
+    def parse_statement(self) -> Union[statement.Statement, expression.Expression]:
+        if self.match(TokenType.FOREACH):
+            return self.foreach_statement()
         return self.expression_statement()
 
-    def expression_statement(self) -> statement.Statement:
-        # exprStatement -> expression ";"|EOF ;
+    def block(self) -> Union[statement.Statement, expression.Expression]:
+        stmt = self.declaration()
+
+        if self.match(TokenType.SEMICOLON):
+            statements: List[statement.Statement] = [stmt]
+            while not self.match(TokenType.RPAREN):
+                statements.append(self.declaration())
+            return statement.Block(statements)
+
+        self.consume(TokenType.RPAREN, "Expected closing parentheis.")
+        assert isinstance(stmt, expression.Expression)
+        return expression.Grouping(stmt)
+
+    def declaration_statement(self) -> statement.Variable:
+        # identifier := expression ";"|EOF ;
+        identifier = self.consume(TokenType.IDENTIFIER, "Variable identifier.")
+        self.consume(TokenType.ASSIGN, "Assignment operator.")
         expr = self.parse_expression()
         if not self.is_at_end():
             self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
-        return statement.Expression(expr)
+        return statement.Variable(identifier, expr)
+
+    def expression_statement(self) -> Union[statement.Statement, expression.Expression]:
+        # exprStatement -> expression ";"|EOF ;
+        expr = self.parse_expression()
+
+        if self.match(TokenType.SEMICOLON):
+            return statement.Expression(expr)
+
+        return expr
 
     def print_statement(self):
         # printStatement -> "print" expression ";"|EOF ;
         ...
 
     def parse_expression(self) -> expression.Expression:
-        # expression
-        # equality (==, !=)
-        # comparison (>, >=, <, <=)
-        # term (-, +)
-        # factor (/, *)
-        # unary (!, -)
-        # primary
+        if self.match(TokenType.IF):
+            return self.if_expression()
+        if self.match(TokenType.ACCUMULATE):
+            return self.accumulate_expression()
+        if self.match(TokenType.REPEAT):
+            return self.repeat_expression()
 
+        return self.assignment()
+
+    def assignment(self) -> expression.Expression:
         expr = self.comparison()
-        while self.match(TokenType.EQUAL):
-            operator = self.previous()
-            right = self.comparison()
-            expr = expression.Binary(expr, operator, right)
+
+        if self.match(TokenType.ASSIGN):
+            _ = self.previous()
+            value = self.assignment()
+
+            if isinstance(expr, expression.Variable):
+                name = expr.name
+                return expression.Assign(name, value)
 
         return expr
 
@@ -117,8 +187,8 @@ class Parser:
                 TokenType.PICK,
                 TokenType.PLUS,
                 TokenType.RANGE,
-                TokenType.SAMPLES,
                 TokenType.UNION,
+                TokenType.AND,
         ):
             operator = self.previous()
             right = self.factor()
@@ -148,6 +218,8 @@ class Parser:
             TokenType.MINUS,
             TokenType.SIGN,
             TokenType.SUM,
+            TokenType.PROBABILITY,
+            TokenType.NOT,
         ]
         if self.match(*operators):
             operator = self.previous()
@@ -157,7 +229,7 @@ class Parser:
         return self.filter()
 
     def filter(self):
-        expr = self.diceroll()
+        expr = self.samples()
         while self.match(
                 TokenType.LESS_THAN,
                 TokenType.GREATER_THAN,
@@ -166,6 +238,16 @@ class Parser:
                 TokenType.EQUAL,
                 TokenType.NOT_EQUAL,
         ):
+            operator = self.previous()
+            right = self.factor()
+            expr = expression.Binary(expr, operator, right)
+
+        return expr
+
+    def samples(self) -> expression.Expression:
+        expr = self.diceroll()
+
+        if self.match(TokenType.SAMPLES):
             operator = self.previous()
             right = self.parse_expression()
             expr = expression.Binary(expr, operator, right)
@@ -193,10 +275,22 @@ class Parser:
         if self.match(TokenType.INTEGER, TokenType.FLOAT):
             return expression.Literal(self.previous().literal)
 
+        if self.match(TokenType.IDENTIFIER):
+            return expression.Variable(self.previous())
+
         if self.match(TokenType.LPAREN):
             expr = self.parse_expression()
-            self.consume(TokenType.RPAREN, "Expect ')' after espression.")
-            return expression.Grouping(expr)
+            if self.match(TokenType.RPAREN):
+                return expression.Grouping(expr)
+
+            self.consume(TokenType.SEMICOLON, "Expected a semi colon")
+            statements: List[expression.Expression] = [expr]
+            while not self.match(TokenType.RPAREN):
+                statements.append(self.parse_expression())
+                if not self.peek().token_type == TokenType.RPAREN:
+                    self.consume(TokenType.SEMICOLON, "Expected a semi colon")
+
+            return expression.Block(statements)
 
         if self.match(TokenType.LBRACKET):
             elements: List[Any] = []
@@ -207,4 +301,4 @@ class Parser:
             self.consume(TokenType.RBRACKET, "Missing '}' to close list.")
             return expression.List(elements)
 
-        raise Exception(f"Unexpected token: {self.peek()}")
+        raise Exception(f"Unexpected token: {self.peek().token_type.value}")

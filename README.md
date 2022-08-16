@@ -5,7 +5,6 @@ Implemented in Python both as a package and for command line use.
 Troll is a dice roll language made by Torben Mogensen  
 http://hjemmesider.diku.dk/~torbenm/Troll/
 
-
 ## Command line usage
 
 Rolling a single die: `trill d12`
@@ -14,16 +13,15 @@ Rolling multiple die: `trill 3d6`
 
 ## Running tests
 
-From the `src` folder: 
+From the `src` folder:
 
 `python -m pytest ../tests`
-
 
 ## Development
 
 Currently in a very early state.
 Most of the notation is not yet implemented.
-See the list below for what is, and what is not (supposed) to work yet. 
+See the list below for what is, and what is not (supposed) to work yet.
 
 ### Notation
 
@@ -33,7 +31,7 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] roll m dn
 - [x] roll one zn (0 - n)
 - [x] roll m zn
-- [x] arithmetic on single value (+ - * / mod)
+- [x] arithmetic on single value (+ - \* / mod)
 - [x] _sgn_, sign of number
 - [x] _sum_, add up values in collection
 - [x] _count_ values in collection
@@ -52,14 +50,14 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _keep_ elements
 - [x] multiset difference ( -- )
 - [x] remove duplicates ( _different_ )
-- [ ] conditional ( if-then-else )
-- [ ] probability ( ?p )
-- [ ] logical and ( & )
+- [x] conditional ( if-then-else )
+- [x] probability ( ?p )
+- [x] logical and ( & )
 - [ ] logical not ( ! )
 - [ ] bind x to value of e1 in e1 ( _x := e1; e2_ )
-- [ ] _foreach x in e1 do e2_
-- [ ] _repeat x := e1 while/until e2_
-- [ ] _accumulate x := e1 while/until e2_
+- [x] _foreach x in e1 do e2_
+- [x] _repeat x := e1 while/until e2_
+- [x] _accumulate x := e1 while/until e2_
 - [ ] _function_
 - [ ] _compositional_
 - [ ] _call_
@@ -70,6 +68,6 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [ ] combine text boxes vertically, right-aligned ( <| )
 - [ ] combine text boxes, centre-aligned ( <> )
 - [ ] Pair of e1,e2 ( [e1, e2])
-- [ ] First component of pair  ( %1 )
+- [ ] First component of pair ( %1 )
 - [ ] Second component of pair ( %2 )
 - [ ] x~v returns value of x if x is defined, else returns v

@@ -1,6 +1,5 @@
 """Run Trill dice roller."""
 from pathlib import Path
-from typing import Union
 import typer
 from .tokens import TokenType
 from .tokenizer import Token, Scanner

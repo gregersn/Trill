@@ -73,6 +73,10 @@ class Scanner:
                 return self.add_token(TokenType.GREATER_THAN_OR_EQUAL, '>=')
             return self.add_token(TokenType.GREATER_THAN, '>')
 
+        if character == ':' and self.peek() == '=':
+            self.advance()
+            return self.add_token(TokenType.ASSIGN, ':=')
+
         if character == '=':
             if self.peek() == '/' and self.peek_next() == '=':
                 self.advance()
@@ -91,6 +95,15 @@ class Scanner:
 
         if character == '*':
             return self.add_token(TokenType.MULTIPLY, character)
+
+        if character == '?':
+            return self.add_token(TokenType.PROBABILITY, character)
+
+        if character == '&':
+            return self.add_token(TokenType.AND, character)
+
+        if character == '!':
+            return self.add_token(TokenType.NOT, character)
 
         if character == '-':
             if self.peek() == '-':

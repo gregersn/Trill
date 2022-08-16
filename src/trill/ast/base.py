@@ -1,4 +1,5 @@
 """Base AST classes and types."""
+from dataclasses import dataclass
 from typing import Any, TypeVar, Generic
 
 T = TypeVar('T')
@@ -7,11 +8,12 @@ T = TypeVar('T')
 class Visitor(Generic[T]):
     """Visitor base class."""
 
-    def visit_generic(self, expression: Any):
+    def visit_generic(self, node: 'Node'):
         """Visit a generic node."""
-        raise Exception(f"No visit_{type(expression).__name__} method")
+        raise Exception(f"No visit_{type(node).__name__} method")
 
 
+@dataclass
 class Node:
     """Node base class."""
 
@@ -20,3 +22,6 @@ class Node:
         method_name = 'visit_' + type(self).__name__ + '_' + type(self).__bases__[0].__name__
         visitor_function = getattr(visitor, method_name)
         return visitor_function(self)
+
+    def __str__(self):
+        return f"<{self.__class__.__name__} />"

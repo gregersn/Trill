@@ -1,9 +1,8 @@
 """Troll interpreter."""
-from typing import TypeVar, List, Any
+from typing import ChainMap, Iterable, TypeVar, List, Any, Union, cast
 import random
 from .ast import expression
 from .ast import statement
-from .ast.base import Node
 from .tokens import TokenType
 
 T = TypeVar('T')
@@ -12,17 +11,32 @@ T = TypeVar('T')
 class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]):
     average: bool = False
 
+    # variables: Dict[str, Union[int, str]] = {}
+    variables: ChainMap[str, Union[int, str]] = ChainMap({})
+
     def __repr__(self):
         return "<Interpreter >"
 
-    def interpret(self, exprs: List[Node], average: bool = False):
+    def push(self):
+        self.variables = self.variables.new_child()
+
+    def pop(self):
+        self.variables = self.variables.parents
+
+    def interpret(self, statements: List[Union[expression.Expression, statement.Statement]], average: bool = False):
         self.average = average
         output: List[Any] = []
-        for expr in exprs:
-            output.append(expr.accept(self))
+        for stmt in statements:
+            if isinstance(stmt, expression.Expression):
+                output.append(self.evaluate(stmt))
+            else:
+                output.append(self.execute(stmt))
         return output
 
-    def visit_Literal_Expression(self, expr: expression.Literal):
+    def execute(self, stmt: statement.Statement):
+        return stmt.accept(self)
+
+    def visit_Literal_Expression(self, expr: expression.Literal) -> Union[str, int, float]:
         return expr.value
 
     def evaluate(self, expr: expression.Expression):
@@ -83,14 +97,53 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         if expr.operator.token_type == TokenType.DIFFERENT:
             return list(set(right))
 
+        if expr.operator.token_type == TokenType.PROBABILITY:
+            if self.average:
+                if right < 0.5:
+                    val = 1.0
+                else:
+                    val = 0.0
+            else:
+                val = random.random()
+
+            if val < right:
+                return 1
+            else:
+                return cast(List[Any], [])
+
         raise Exception(f"Unknown operator {expr.operator.token_type} in unary expression")
 
     def visit_Binary_Expression(self, expr: expression.Binary):
         if expr.operator.token_type == TokenType.SAMPLES:
-            return [self.evaluate(expr.right) for _ in range(int(self.evaluate(expr.left)))]
+            output: List[Union[int, float, str]] = []
+            for _ in range(int(self.evaluate(expr.left))):
+                new_val = self.evaluate(expr.right)
+                if isinstance(new_val, Iterable):
+                    output = output + list(new_val)
+                else:
+                    output.append(new_val)
+            return output
 
-        left = self.evaluate(expr.left)
-        right = self.evaluate(expr.right)
+        if isinstance(expr.left, expression.Literal):
+            val = self.evaluate(expr.left)
+            if isinstance(val, str):
+                left = self.variables.get(val)
+            else:
+                left = val
+        else:
+            left = self.evaluate(expr.left)
+
+        if isinstance(expr.right, expression.Literal):
+            val = self.evaluate(expr.right)
+            if isinstance(val, str):
+                right = self.variables.get(val)
+            else:
+                right = val
+        else:
+            right = self.evaluate(expr.right)
+
+        if not (isinstance(left, (float, int, list)) and isinstance(right, (float, int, list))):
+            raise Exception("Whatt now")
 
         if expr.operator.token_type == TokenType.DICE:
             start = 0 if expr.operator.lexeme == 'z' else 1
@@ -114,6 +167,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             return left + right
 
         if expr.operator.token_type == TokenType.PICK:
+            if isinstance(left, int):
+                raise Exception("Unexpected integer.")
             samples = min(len(left), right)
             if self.average:
                 offset = samples // 2
@@ -164,6 +219,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         if expr.operator.token_type == TokenType.MULTIPLY:
             return left * right
 
+        if expr.operator.token_type == TokenType.AND:
+            return left and right
+
         if expr.operator.token_type in [
                 TokenType.LESS_THAN,
                 TokenType.LESS_THAN_OR_EQUAL,
@@ -198,6 +256,22 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
     def visit_Grouping_Expression(self, expr: expression.Grouping):
         return self.evaluate(expr.expression)
 
+    def visit_Block_Expression(self, expr: expression.Block):
+        val = None
+        self.push()
+        for stmt in expr.statements:
+            val = self.evaluate(stmt)
+        self.pop()
+        return val
+
+    def visit_Block_Statement(self, expr: statement.Block):
+        val = None
+        self.push()
+        for stmt in expr.statements:
+            val = self.execute(stmt)
+        self.pop()
+        return val
+
     def visit_List_Expression(self, expr: expression.List):
         output: List[Any] = []
         for value in expr.value:
@@ -209,5 +283,77 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
         return output
 
+    def visit_Assign_Expression(self, expr: expression.Assign):
+        self.variables[expr.name.literal] = self.evaluate(expr.value)
+        # return self.variables[expr.name.literal]
+
     def visit_Expression_Statement(self, stmt: statement.Expression):
         return self.evaluate(stmt.expression)
+
+    def visit_Variable_Statement(self, stmt: statement.Variable):
+        self.variables[stmt.name.literal] = self.evaluate(stmt.initializer)
+        # return self.variables[stmt.name.literal]
+
+    def visit_Variable_Expression(self, expr: expression.Variable):
+        return self.variables[expr.name.literal]
+
+    def visit_Conditional_Expression(self, stmt: expression.Conditional):
+        if self.evaluate(stmt.condition):
+            return self.evaluate(stmt.truth)
+        return self.evaluate(stmt.falsy)
+
+    def visit_Foreach_Statement(self, stmt: statement.Foreach):
+        output: List[Any] = []
+        self.push()
+        for val in self.evaluate(stmt.source):
+            self.variables[stmt.iterator.name.literal] = val
+            if isinstance(stmt.block, statement.Block):
+                output.append(self.execute(stmt.block))
+            else:
+                output.append(self.evaluate(stmt.block))
+        self.pop()
+        return output
+
+    def visit_Repeat_Expression(self, stmt: expression.Repeat):
+        condition = stmt.condition
+        action = stmt.action
+        qualifier = stmt.qualifier
+
+        self.push()
+        action_variable_name = action.name
+        if condition.token_type == TokenType.WHILE:
+            res = self.evaluate(action)
+            while self.evaluate(qualifier) and not self.average:
+                res = self.evaluate(action)
+
+        if condition.token_type == TokenType.UNTIL:
+            res = self.evaluate(action)
+            while not self.evaluate(qualifier) and not self.average:
+                res = self.evaluate(action)
+
+        res = self.variables.get(action_variable_name.literal)
+        self.pop()
+        return res
+
+    def visit_Accumulate_Expression(self, stmt: expression.Accumulate) -> List[Union[int, float, str, None]]:
+        action = stmt.action
+        qualifier = stmt.qualifier
+
+        result: List[Union[int, float, str, None]] = []
+        self.push()
+        action_variable_name = action.name
+        self.evaluate(action)
+        result.append(self.variables.get(action_variable_name.literal))
+        while self.evaluate(qualifier):
+            self.evaluate(action)
+            val = self.variables.get(action_variable_name.literal)
+            if isinstance(val, (int, float)):
+                result.append(val)
+            elif isinstance(val, list):
+                result += val
+            else:
+                raise Exception("Unknown stuff")
+
+        self.pop()
+
+        return result

@@ -181,16 +181,6 @@ class Scanner:
             res += self.advance()
         return res
 
-    def match(self, expected: str):
-        if self.is_at_end():
-            return False
-
-        if self.source[self._current] != expected:
-            return False
-
-        self._current += 1
-        return True
-
     def peek(self):
         if self.is_at_end():
             return '\0'

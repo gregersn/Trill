@@ -122,5 +122,9 @@ testcases: List[TestCase] = [
         20,
         ['(assign N 2)', '(count (< 5 (# N (group (accumulate (assign x (d 10)) (= x 10))))))'],
         [None, 2],
-    )
+    ),
+    TestCase('dX := 4; dX', 5, ['(assign dX 4)', 'dX'], [None, 4]),
+    TestCase('X := 4; d X', 6, ['(assign X 4)', '(d X)'], [None, 2.5]),
+    TestCase('N := 3; N d6', 7, ['(assign N 3)', '(d N 6)'], [None, [3.5, 3.5, 3.5]]),
+    TestCase('N := 4; \\ This is a comment\nN d6', 8, ['(assign N 4)', '(d N 6)'], [None, [3.5, 3.5, 3.5, 3.5]])
 ]

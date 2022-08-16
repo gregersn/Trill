@@ -56,6 +56,8 @@ class Parser:
     def parse(self):
         statements: List[Union[statement.Statement, expression.Expression]] = []
         while not self.is_at_end():
+            if self.match(TokenType.COMMENT):
+                continue
             statements.append(self.declaration())
         return statements
 

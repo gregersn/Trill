@@ -46,6 +46,11 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
     def visit_Unary_Expression(self, expr: expression.Unary):
         right = self.evaluate(expr.right)
 
+        if expr.operator.token_type == TokenType.NOT:
+            if not right:
+                return 1
+            return []
+
         if expr.operator.token_type == TokenType.MINUS:
             return -right
 
@@ -269,14 +274,6 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.pop()
         return val
 
-    def visit_Block_Statement(self, expr: statement.Block):
-        val = None
-        self.push()
-        for stmt in expr.statements:
-            val = self.execute(stmt)
-        self.pop()
-        return val
-
     def visit_Pair_Expression(self, expr: expression.Pair):
         return (self.evaluate(expr.first), self.evaluate(expr.second))
 
@@ -352,6 +349,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         action_variable_name = action.name
         self.evaluate(action)
         result.append(self.variables.get(action_variable_name.literal))
+
         while self.evaluate(qualifier):
             self.evaluate(action)
             val = self.variables.get(action_variable_name.literal)

@@ -37,15 +37,10 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
     def visit_Grouping_Expression(self, expr: expression.Grouping) -> str:
         return self.parenthesize('group', expr.expression)
 
-    def visit_Block_Statement(self, expr: statement.Block) -> str:
-        return f'(block {"; ".join(self.print(expr.statements))})'
-
     def visit_Block_Expression(self, expr: expression.Block) -> str:
         return f'(block {"; ".join(self.print(expr.statements))})'
 
     def visit_Literal_Expression(self, expr: expression.Literal) -> str:
-        if expr.value is None:
-            return "None"
         return str(expr.value)
 
     def visit_Assign_Expression(self, expr: expression.Assign) -> str:

@@ -112,19 +112,6 @@ class Parser:
             return self.foreach_statement()
         return self.expression_statement()
 
-    def block(self) -> Union[statement.Statement, expression.Expression]:
-        stmt = self.declaration()
-
-        if self.match(TokenType.SEMICOLON):
-            statements: List[statement.Statement] = [stmt]
-            while not self.match(TokenType.RPAREN):
-                statements.append(self.declaration())
-            return statement.Block(statements)
-
-        self.consume(TokenType.RPAREN, "Expected closing parentheis.")
-        assert isinstance(stmt, expression.Expression)
-        return expression.Grouping(stmt)
-
     def declaration_statement(self) -> statement.Variable:
         # identifier := expression ";"|EOF ;
         identifier = self.consume(TokenType.IDENTIFIER, "Variable identifier.")
@@ -142,10 +129,6 @@ class Parser:
             return statement.Expression(expr)
 
         return expr
-
-    def print_statement(self):
-        # printStatement -> "print" expression ";"|EOF ;
-        ...
 
     def parse_expression(self) -> expression.Expression:
         if self.match(TokenType.IF):

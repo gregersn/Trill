@@ -126,5 +126,8 @@ testcases: List[TestCase] = [
     TestCase('dX := 4; dX', 5, ['(assign dX 4)', 'dX'], [None, 4]),
     TestCase('X := 4; d X', 6, ['(assign X 4)', '(d X)'], [None, 2.5]),
     TestCase('N := 3; N d6', 7, ['(assign N 3)', '(d N 6)'], [None, [3.5, 3.5, 3.5]]),
-    TestCase('N := 4; \\ This is a comment\nN d6', 8, ['(assign N 4)', '(d N 6)'], [None, [3.5, 3.5, 3.5, 3.5]])
+    TestCase('N := 4; \\ This is a comment\nN d6', 8, ['(assign N 4)', '(d N 6)'], [None, [3.5, 3.5, 3.5, 3.5]]),
+    TestCase('x := 3; x ~ 4', 7, ['(assign x 3)', '(~ x 4)'], [None, 3]),
+    TestCase('x ~ 4', 3, ['(~ x 4)'], [4]),
+    TestCase('x := 6d6; [max x, count different x]', 14, ['(assign x (d 6 6))', '(pair (max x) (count (different x)))'], [None, (3.5, 1)])
 ]

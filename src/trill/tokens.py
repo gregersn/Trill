@@ -12,8 +12,11 @@ class TokenType(Enum):
     RBRACKET = '}'
     LPAREN = '('
     RPAREN = ')'
+    LSQUARE = '['
+    RSQUARE = ']'
 
     ASSIGN = ':='
+    DEFAULT = '~'
 
     DIVIDE = '/'
     MINUS = '-'

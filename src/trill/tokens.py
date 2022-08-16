@@ -4,6 +4,7 @@ from typing import Any
 
 
 class TokenType(Enum):
+    COMMENT = '\\'
     COMMA = ','
     SEMICOLON = ';'
 

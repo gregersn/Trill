@@ -93,6 +93,9 @@ class Scanner:
         if character == '/':
             return self.add_token(TokenType.DIVIDE, character)
 
+        if character == '\\':
+            return self.add_token(TokenType.COMMENT, self.comment())
+
         if character == '*':
             return self.add_token(TokenType.MULTIPLY, character)
 
@@ -160,6 +163,14 @@ class Scanner:
     def advance(self):
         self._current += 1
         return self.source[self._current - 1]
+
+    def comment(self):
+        res = ''
+
+        self.advance()
+        while self.peek() != '\n':
+            res += self.advance()
+        return res
 
     def match(self, expected: str):
         if self.is_at_end():

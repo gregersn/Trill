@@ -38,6 +38,12 @@ class List(Expression):
 
 
 @dataclass
+class Pair(Expression):
+    first: Expression
+    second: Expression
+
+
+@dataclass
 class Literal(Expression):
     value: Union[int, float, str]
 

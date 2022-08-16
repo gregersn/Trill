@@ -191,6 +191,7 @@ class Parser:
                 TokenType.RANGE,
                 TokenType.UNION,
                 TokenType.AND,
+                TokenType.DEFAULT,
         ):
             operator = self.previous()
             right = self.factor()
@@ -302,5 +303,12 @@ class Parser:
                     self.consume(TokenType.COMMA, "Expect ',' to separate elements.")
             self.consume(TokenType.RBRACKET, "Missing '}' to close list.")
             return expression.List(elements)
+
+        if self.match(TokenType.LSQUARE):
+            a = self.parse_expression()
+            self.consume(TokenType.COMMA, "Expect ',' to separate pair.")
+            b = self.parse_expression()
+            self.consume(TokenType.RSQUARE, "Missing ']' to close pair.")
+            return expression.Pair(a, b)
 
         raise Exception(f"Unexpected token: {self.peek().token_type.value}")

@@ -108,6 +108,9 @@ class Scanner:
         if character == '!':
             return self.add_token(TokenType.NOT, character)
 
+        if character == '~':
+            return self.add_token(TokenType.DEFAULT, character)
+
         if character == '-':
             if self.peek() == '-':
                 self.advance()
@@ -125,6 +128,12 @@ class Scanner:
 
         if character == '}':
             return self.add_token(TokenType.RBRACKET, character)
+
+        if character == '[':
+            return self.add_token(TokenType.LSQUARE, character)
+
+        if character == ']':
+            return self.add_token(TokenType.RSQUARE, character)
 
         if character == ',':
             return self.add_token(TokenType.COMMA, character)

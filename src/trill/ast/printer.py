@@ -60,6 +60,9 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
     def visit_Variable_Statement(self, stmt: statement.Variable) -> str:
         return self.parenthesize(f'assign {stmt.name.literal}', stmt.initializer)
 
+    def visit_Pair_Expression(self, expr: expression.Pair) -> str:
+        return self.parenthesize('pair', expr.first, expr.second)
+
     def visit_List_Expression(self, expr: expression.List) -> str:
         return f'(collection {" ".join([self.evaluate(v) for v in expr.value])})'
 
@@ -71,6 +74,6 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
 
     def visit_Repeat_Expression(self, stmt: expression.Repeat):
         return self.parenthesize(f'repeat {stmt.condition.literal}', stmt.action, stmt.qualifier)
-    
+
     def visit_Accumulate_Expression(self, stmt: expression.Accumulate):
         return self.parenthesize(f'accumulate', stmt.action, stmt.qualifier)

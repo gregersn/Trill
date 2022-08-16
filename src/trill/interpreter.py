@@ -25,6 +25,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
     def interpret(self, statements: List[Union[expression.Expression, statement.Statement]], average: bool = False):
         self.average = average
+        self.variables = ChainMap({})
         output: List[Any] = []
         for stmt in statements:
             if isinstance(stmt, expression.Expression):
@@ -114,6 +115,10 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         raise Exception(f"Unknown operator {expr.operator.token_type} in unary expression")
 
     def visit_Binary_Expression(self, expr: expression.Binary):
+        if expr.operator.token_type == TokenType.DEFAULT:
+            left = self.evaluate(expr.left)
+            return left or self.evaluate(expr.right)
+
         if expr.operator.token_type == TokenType.SAMPLES:
             output: List[Union[int, float, str]] = []
             for _ in range(int(self.evaluate(expr.left))):
@@ -272,6 +277,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.pop()
         return val
 
+    def visit_Pair_Expression(self, expr: expression.Pair):
+        return (self.evaluate(expr.first), self.evaluate(expr.second))
+
     def visit_List_Expression(self, expr: expression.List):
         output: List[Any] = []
         for value in expr.value:
@@ -295,7 +303,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         # return self.variables[stmt.name.literal]
 
     def visit_Variable_Expression(self, expr: expression.Variable):
-        return self.variables[expr.name.literal]
+        return self.variables.get(expr.name.literal, None)
 
     def visit_Conditional_Expression(self, stmt: expression.Conditional):
         if self.evaluate(stmt.condition):

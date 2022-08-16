@@ -50,7 +50,7 @@ class Scanner:
 
     def identifier(self):
         """Identifiers are either custom names or reserved keywords."""
-        while self.peek().isalpha() or self.peek().isdigit():
+        while self.peek().isalpha():
             self.advance()
 
         text = self.source[self._start:self._current]

@@ -26,4 +26,6 @@ KEYWORDS = {
     'until': TokenType.UNTIL,
     'while': TokenType.WHILE,
     'accumulate': TokenType.ACCUMULATE,
+    'function': TokenType.FUNCTION,
+    'call': TokenType.CALL,
 }

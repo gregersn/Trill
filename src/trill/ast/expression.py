@@ -83,3 +83,16 @@ class Repeat(Expression):
 class Accumulate(Expression):
     action: Assign
     qualifier: Expression
+
+
+@dataclass
+class Call(Expression):
+    name: Token
+    parameters: TList['Expression']
+
+
+@dataclass
+class Foreach(Expression):
+    iterator: Variable
+    source: Expression
+    block: Union[Block, Expression]

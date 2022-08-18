@@ -94,7 +94,8 @@ class Scanner:
             return self.add_token(TokenType.DIVIDE, character)
 
         if character == '\\':
-            return self.add_token(TokenType.COMMENT, self.comment())
+            self.comment()
+            return
 
         if character == '*':
             return self.add_token(TokenType.MULTIPLY, character)

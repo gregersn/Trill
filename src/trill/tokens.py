@@ -73,6 +73,9 @@ class TokenType(Enum):
     UNTIL = 'until'
     ACCUMULATE = 'accumulate'
 
+    FUNCTION = 'function'
+    CALL = 'call'
+
     EOF = 'eof'
 
 

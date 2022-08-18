@@ -49,12 +49,6 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
     def visit_Variable_Expression(self, expr: expression.Variable) -> str:
         return expr.name.lexeme
 
-    def visit_Expression_Statement(self, stmt: statement.Expression) -> str:
-        return self.evaluate(stmt.expression)
-
-    def visit_Variable_Statement(self, stmt: statement.Variable) -> str:
-        return self.parenthesize(f'assign {stmt.name.literal}', stmt.initializer)
-
     def visit_Pair_Expression(self, expr: expression.Pair) -> str:
         return self.parenthesize('pair', expr.first, expr.second)
 
@@ -64,11 +58,21 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
     def visit_Conditional_Expression(self, stmt: expression.Conditional) -> str:
         return self.parenthesize('if', stmt.condition, stmt.truth, stmt.falsy)
 
-    def visit_Foreach_Statement(self, stmt: statement.Foreach):
-        return self.parenthesize('foreach', stmt.iterator, stmt.source, stmt.block)
+    def visit_Foreach_Expression(self, expr: expression.Foreach):
+        return self.parenthesize('foreach', expr.iterator, expr.source, expr.block)
 
     def visit_Repeat_Expression(self, stmt: expression.Repeat):
         return self.parenthesize(f'repeat {stmt.condition.literal}', stmt.action, stmt.qualifier)
 
     def visit_Accumulate_Expression(self, stmt: expression.Accumulate):
-        return self.parenthesize(f'accumulate', stmt.action, stmt.qualifier)
+        return self.parenthesize('accumulate', stmt.action, stmt.qualifier)
+
+    def visit_Call_Expression(self, expr: expression.Call):
+        return self.parenthesize(f"call {expr.name.literal}", *expr.parameters)
+
+    def visit_Function_Statement(self, stmt: statement.Function):
+        name = stmt.name
+        parameters = stmt.parameters
+        expr = stmt.expression
+
+        return self.parenthesize(f"function {name.literal} ({','.join(p.literal for p in parameters)})", expr)

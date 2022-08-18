@@ -4,8 +4,8 @@ from trill.tokenizer import Scanner
 from trill.tokens import TokenType, Token
 
 number_tests = [
-    ('4', Token(TokenType.INTEGER, '4', 4, 0)),
-    ('3.141', Token(TokenType.FLOAT, '3.141', 3.141, 0)),
+    ('4', Token(TokenType.INTEGER, '4', 4, 0, 1)),
+    ('3.141', Token(TokenType.FLOAT, '3.141', 3.141, 0, 1)),
 ]
 
 
@@ -17,7 +17,7 @@ def test_numbers(source: str, result: Token):
 
 
 identifier_tests = [
-    ('foo', Token(TokenType.IDENTIFIER, 'foo', 'foo', 0)),
+    ('foo', Token(TokenType.IDENTIFIER, 'foo', 'foo', 0, 1)),
 ]
 
 

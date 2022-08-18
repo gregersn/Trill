@@ -84,12 +84,14 @@ class Token:
     lexeme: str
     literal: Any
     line: int
+    column: int
 
-    def __init__(self, _type: TokenType, lexeme: str, literal: Any, line: int):
+    def __init__(self, _type: TokenType, lexeme: str, literal: Any, line: int, column: int):
         self.token_type = _type
         self.lexeme = lexeme
         self.literal = literal
         self.line = line
+        self.column = column
 
     def __str__(self):
         return f"{self.token_type.value} {self.lexeme} {self.literal if self.literal is not None else ''}"

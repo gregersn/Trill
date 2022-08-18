@@ -9,6 +9,7 @@ class TestCase:
     token_count: Optional[int]
     parse_result: Optional[List[str]]
     interpret_result: Optional[List[Any]]
+    error: Optional[str] = None
 
 
 testcases: List[TestCase] = [
@@ -28,7 +29,7 @@ testcases: List[TestCase] = [
     TestCase('d4#d6', 5, ['(# (d 4) (d 6))'], [[3.5, 3.5]]),
     TestCase('10#(sum 5d6)', 8, ['(# 10 (group (sum (d 5 6))))'], [[5 * 3.5] * 10]),
     TestCase('3d6 U 3d8', 7, ['(U (d 3 6) (d 3 8))'], [[3.5, 3.5, 3.5, 4.5, 4.5, 4.5]]),
-    TestCase('3d6;10d4', 7, ['(d 3 6)', '(d 10 4)'], [[3.5] * 3, [2.5] * 10]),
+    TestCase('3d6;10d4', 7, None, None, "Parse-error at line 1, column 3"),
     TestCase('d6 U 3d8', 6, ['(U (d 6) (d 3 8))'], [[3.5, 4.5, 4.5, 4.5]]),
     TestCase('3d6 U d8', 6, ['(U (d 3 6) (d 8))'], [[3.5, 3.5, 3.5, 4.5]]),
     TestCase('1..6', 3, ['(.. 1 6)'], [[1, 2, 3, 4, 5, 6]]),
@@ -62,45 +63,45 @@ testcases: List[TestCase] = [
     TestCase('{2, 2, 3} -- {2, 4}', 13, ['(-- (collection 2 2 3) (collection 2 4))'], [[2, 3]]),
     TestCase('different {2, 1, 2}', 8, ['(different (collection 2 1 2))'], [[1, 2]]),
     TestCase('median {2, 6, 23}', 8, ['(median (collection 2 6 23))'], [6]),
-    TestCase('x := d6; x*x', 8, ['(assign x (d 6))', '(* x x)'], [None, 3.5 * 3.5]),
+    TestCase('x := d6; x*x', 8, ['(block (assign x (d 6)); (* x x))'], [3.5 * 3.5]),
     TestCase(
         'x := d6; y := d8; x*x*y*y',
         17,
-        ['(assign x (d 6))', '(assign y (d 8))', '(* (* (* x x) y) y)'],
-        [None, None, 3.5 * 3.5 * 4.5 * 4.5],
+        ['(block (assign x (d 6)); (assign y (d 8)); (* (* (* x x) y) y))'],
+        [3.5 * 3.5 * 4.5 * 4.5],
     ),
     TestCase(
         'x := 2; (x := 1; x) U x',
         13,
-        ['(assign x 2)', '(U (block (assign x 1); x) x)'],
-        [None, [1, 2]],
+        ['(block (assign x 2); (U (block (assign x 1); x) x))'],
+        [[1, 2]],
     ),
-    TestCase('x := 3d6; x', 7, ['(assign x (d 3 6))', 'x'], [None, [3.5, 3.5, 3.5]]),
+    TestCase('x := 3d6; x', 7, ['(block (assign x (d 3 6)); x)'], [[3.5, 3.5, 3.5]]),
     TestCase(
         'x := 1; y := 3; if x = y then 2*x else max (x U y)',
         23,
-        ['(assign x 1)', '(assign y 3)', '(if (= x y) (* 2 x) (max (group (U x y))))'],
-        [None, None, 3],
+        ['(block (assign x 1); (assign y 3); (if (= x y) (* 2 x) (max (group (U x y)))))'],
+        [3],
     ),
     TestCase(
         'x := 2; y := 2; if x = y then 2*x else max (x U y)',
         23,
-        ['(assign x 2)', '(assign y 2)', '(if (= x y) (* 2 x) (max (group (U x y))))'],
-        [None, None, 4],
+        ['(block (assign x 2); (assign y 2); (if (= x y) (* 2 x) (max (group (U x y)))))'],
+        [4],
     ),
     TestCase('?0.9', 2, ['(? 0.9)'], [1]),
     TestCase('?0.1', 2, ['(? 0.1)'], [[]]),
     TestCase(
         'x := 2; y := 3; if x = 2 & y = 3 then 42 else 24',
         20,
-        ['(assign x 2)', '(assign y 3)', '(if (& (= x 2) (= y 3)) 42 24)'],
-        [None, None, 42],
+        ['(block (assign x 2); (assign y 3); (if (& (= x 2) (= y 3)) 42 24))'],
+        [42],
     ),
     TestCase(
         'x := 3; y := 3; if x = 2 & y = 3 then 42 else 24',
         20,
-        ['(assign x 3)', '(assign y 3)', '(if (& (= x 2) (= y 3)) 42 24)'],
-        [None, None, 24],
+        ['(block (assign x 3); (assign y 3); (if (& (= x 2) (= y 3)) 42 24))'],
+        [24],
     ),
     TestCase('foreach x in 1..3 do x+1', 10, ['(foreach x (.. 1 3) (+ x 1))'], [[2, 3, 4]]),
     TestCase('repeat x:=d8 until x<8', 9, ['(repeat until (assign x (d 8)) (< x 8))'], [4.5]),
@@ -120,16 +121,37 @@ testcases: List[TestCase] = [
     TestCase(
         'N := 2; count 5< N#(accumulate x:=d10 while x=10)',
         20,
-        ['(assign N 2)', '(count (< 5 (# N (group (accumulate (assign x (d 10)) (= x 10))))))'],
-        [None, 2],
+        ['(block (assign N 2); (count (< 5 (# N (group (accumulate (assign x (d 10)) (= x 10)))))))'],
+        [2],
     ),
-    TestCase('dX := 4; dX', 5, ['(assign dX 4)', 'dX'], [None, 4]),
-    TestCase('X := 4; d X', 6, ['(assign X 4)', '(d X)'], [None, 2.5]),
-    TestCase('N := 3; N d6', 7, ['(assign N 3)', '(d N 6)'], [None, [3.5, 3.5, 3.5]]),
-    TestCase('N := 4; \\ This is a comment\nN d6', 8, ['(assign N 4)', '(d N 6)'], [None, [3.5, 3.5, 3.5, 3.5]]),
-    TestCase('x := 3; x ~ 4', 7, ['(assign x 3)', '(~ x 4)'], [None, 3]),
+    TestCase('dX := 4; dX', 5, ['(block (assign dX 4); dX)'], [4]),
+    TestCase('X := 4; d X', 6, ['(block (assign X 4); (d X))'], [2.5]),
+    TestCase('N := 3; N d6', 7, ['(block (assign N 3); (d N 6))'], [[3.5, 3.5, 3.5]]),
+    TestCase('N := 4; \\ This is a comment\nN d6', 7, ['(block (assign N 4); (d N 6))'], [[3.5, 3.5, 3.5, 3.5]]),
+    TestCase('x := 3; x ~ 4', 7, ['(block (assign x 3); (~ x 4))'], [3]),
     TestCase('x ~ 4', 3, ['(~ x 4)'], [4]),
-    TestCase('x := 6d6; [max x, count different x]', 14, ['(assign x (d 6 6))', '(pair (max x) (count (different x)))'], [None, (3.5, 1)]),
-    TestCase('x := {}; !x', 7, ['(assign x (collection ))', '(! x)'], [None, 1]),
-    TestCase('x := 7; !x', 6, ['(assign x 7)', '(! x)'], [None, []]),
+    TestCase('x := 6d6; [max x, count different x]', 14, ['(block (assign x (d 6 6)); (pair (max x) (count (different x))))'], [(3.5, 1)]),
+    TestCase('x := {}; !x', 7, ['(block (assign x (collection )); (! x))'], [1]),
+    TestCase('x := 7; !x', 6, ['(block (assign x 7); (! x))'], [[]]),
+    TestCase('(min v)*call mul(largest ((count v)-1) v)', 19, ['(* (group (min v)) (call mul largest (group (- (group (count v)) 1)) v))'],
+             None),
+    TestCase("""function foo(v) = v * v\ncall foo(5)""", None, None, [None, 25]),
+    TestCase("""function foo(v) = if v then call foo(v - 1) + v else 0\ncall foo(3)""", None, None, [None, 6]),
+    TestCase(
+        """function mul(v) =
+if v then (min v)*call mul(largest ((count v)-1) v)
+else 1
+call mul(5d10)
+    """, 37,
+        ['(function mul (v) (if v (* (group (min v)) (call mul largest (group (- (group (count v)) 1)) v)) 1))', '(call mul (d 5 10))'],
+        [None, 5.5]),
+    TestCase("""function even(n) =
+if n=0 then 1 else call odd(n-1)
+call even(d9)
+function odd(n) =
+if n=0 then 0 else call even(n-1)""", 46, None, [None, None, 0]),
+    TestCase("""function down(n) =
+x := d n;
+if x=1 then 1 else x + call down(x)
+call down(10)""", 30, ['(function down (n) (block (assign x (d n)); (if (= x 1) 1 (+ x (call down x)))))', '(call down 10)'], None)
 ]

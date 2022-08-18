@@ -54,20 +54,31 @@ class Parser:
         raise self.error(self.peek(), message)
 
     def parse(self):
+        # roll ->  (function* | expression)
         statements: List[Union[statement.Statement, expression.Expression]] = []
         while not self.is_at_end():
-            if self.match(TokenType.COMMENT):
-                continue
-            statements.append(self.declaration())
+            expr = self.declaration()
+            statements.append(expr)
         return statements
 
     def declaration(self) -> Union[statement.Statement, expression.Expression]:
         # statement -> exprStatement | printStatement;
         # if self.match(TokenType.PRINT):
         #     return self.print_Statement()
-        if self.check(TokenType.IDENTIFIER) and self.peek(1).token_type == TokenType.ASSIGN:
-            return self.declaration_statement()
-        return self.parse_statement()
+        if self.match(TokenType.FUNCTION):
+            return self.function_declaration()
+
+        expr = self.parse_expression()
+
+        if self.check(TokenType.SEMICOLON):
+            expressions = [expr]
+            while self.match(TokenType.SEMICOLON):
+                expr = self.parse_expression()
+                expressions.append(expr)
+
+            return expression.Block(expressions)
+
+        return expr
 
     def if_expression(self):
         condition = self.parse_expression()
@@ -78,7 +89,7 @@ class Parser:
 
         return expression.Conditional(condition, true_result, false_result)
 
-    def foreach_statement(self):
+    def foreach_expression(self):
         iterator = self.primary()
         self.consume(TokenType.IN, 'Expecting IN')
         source = self.parse_expression()
@@ -87,7 +98,7 @@ class Parser:
 
         assert isinstance(iterator, expression.Variable)
 
-        return statement.Foreach(iterator, source, block)
+        return expression.Foreach(iterator, source, block)
 
     def repeat_expression(self):
         action = self.assignment()
@@ -107,28 +118,18 @@ class Parser:
         assert isinstance(action, expression.Assign)
         return expression.Accumulate(action, qualifier)
 
-    def parse_statement(self) -> Union[statement.Statement, expression.Expression]:
-        if self.match(TokenType.FOREACH):
-            return self.foreach_statement()
-        return self.expression_statement()
+    def function_declaration(self) -> statement.Function:
+        identifier = self.consume(TokenType.IDENTIFIER, "Expected function identifier.")
 
-    def declaration_statement(self) -> statement.Variable:
-        # identifier := expression ";"|EOF ;
-        identifier = self.consume(TokenType.IDENTIFIER, "Variable identifier.")
-        self.consume(TokenType.ASSIGN, "Assignment operator.")
-        expr = self.parse_expression()
-        if not self.is_at_end():
-            self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
-        return statement.Variable(identifier, expr)
+        self.consume(TokenType.LPAREN, "Expect '(' after function name.")
+        parameters: List[Token] = []
+        while not self.match(TokenType.RPAREN):
+            parameters.append(self.consume(TokenType.IDENTIFIER, "Expect variable name"))
 
-    def expression_statement(self) -> Union[statement.Statement, expression.Expression]:
-        # exprStatement -> expression ";"|EOF ;
-        expr = self.parse_expression()
+        self.consume(TokenType.EQUAL, "Expect '=' before function body.")
+        expr = self.declaration()
 
-        if self.match(TokenType.SEMICOLON):
-            return statement.Expression(expr)
-
-        return expr
+        return statement.Function(identifier, parameters, expr)
 
     def parse_expression(self) -> expression.Expression:
         if self.match(TokenType.IF):
@@ -137,8 +138,19 @@ class Parser:
             return self.accumulate_expression()
         if self.match(TokenType.REPEAT):
             return self.repeat_expression()
+        if self.match(TokenType.FOREACH):
+            return self.foreach_expression()
 
         return self.assignment()
+
+    def function_call(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expected name of function to call.")
+        parameters: List[expression.Expression] = []
+        self.consume(TokenType.LPAREN, "Expect parenthesis for function call")
+        while not self.match(TokenType.RPAREN):
+            parameters.append(self.parse_expression())
+
+        return expression.Call(name, parameters)
 
     def assignment(self) -> expression.Expression:
         expr = self.comparison()
@@ -192,6 +204,9 @@ class Parser:
         return expr
 
     def unary(self) -> expression.Expression:
+        if self.match(TokenType.CALL):
+            return self.function_call()
+
         operators = [
             TokenType.CHOOSE,
             TokenType.COUNT,
@@ -273,8 +288,6 @@ class Parser:
             statements: List[expression.Expression] = [expr]
             while not self.match(TokenType.RPAREN):
                 statements.append(self.parse_expression())
-                if not self.peek().token_type == TokenType.RPAREN:
-                    self.consume(TokenType.SEMICOLON, "Expected a semi colon")
 
             return expression.Block(statements)
 

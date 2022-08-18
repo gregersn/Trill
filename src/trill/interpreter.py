@@ -1,5 +1,5 @@
 """Troll interpreter."""
-from typing import ChainMap, Iterable, TypeVar, List, Any, Union, cast
+from typing import ChainMap, Dict, Iterable, TypeVar, List, Any, Union, cast
 import random
 from .ast import expression
 from .ast import statement
@@ -13,6 +13,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
     # variables: Dict[str, Union[int, str]] = {}
     variables: ChainMap[str, Union[int, str]] = ChainMap({})
+    functions: Dict[str, statement.Function] = {}
 
     def __repr__(self):
         return "<Interpreter >"
@@ -27,11 +28,18 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.average = average
         self.variables = ChainMap({})
         output: List[Any] = []
+
+        # Find all function delcarations first, so that they are available on run.
         for stmt in statements:
+            if isinstance(stmt, statement.Function):
+                output.append(self.execute(stmt))
+
+        # Run statements, skip function declarations, as they are already done.
+        for stmt in statements:
+            if isinstance(stmt, statement.Function):
+                continue
             if isinstance(stmt, expression.Expression):
                 output.append(self.evaluate(stmt))
-            else:
-                output.append(self.execute(stmt))
         return output
 
     def execute(self, stmt: statement.Statement):
@@ -292,13 +300,6 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.variables[expr.name.literal] = self.evaluate(expr.value)
         # return self.variables[expr.name.literal]
 
-    def visit_Expression_Statement(self, stmt: statement.Expression):
-        return self.evaluate(stmt.expression)
-
-    def visit_Variable_Statement(self, stmt: statement.Variable):
-        self.variables[stmt.name.literal] = self.evaluate(stmt.initializer)
-        # return self.variables[stmt.name.literal]
-
     def visit_Variable_Expression(self, expr: expression.Variable):
         return self.variables.get(expr.name.literal, None)
 
@@ -307,15 +308,12 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             return self.evaluate(stmt.truth)
         return self.evaluate(stmt.falsy)
 
-    def visit_Foreach_Statement(self, stmt: statement.Foreach):
+    def visit_Foreach_Expression(self, expr: expression.Foreach):
         output: List[Any] = []
         self.push()
-        for val in self.evaluate(stmt.source):
-            self.variables[stmt.iterator.name.literal] = val
-            if isinstance(stmt.block, statement.Block):
-                output.append(self.execute(stmt.block))
-            else:
-                output.append(self.evaluate(stmt.block))
+        for val in self.evaluate(expr.source):
+            self.variables[expr.iterator.name.literal] = val
+            output.append(self.evaluate(expr.block))
         self.pop()
         return output
 
@@ -363,3 +361,16 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.pop()
 
         return result
+
+    def visit_Function_Statement(self, stmt: statement.Function):
+        self.functions[stmt.name.literal] = stmt
+
+    def visit_Call_Expression(self, expr: expression.Call):
+        assert expr.name.literal in self.functions
+        stmt = self.functions[expr.name.literal]
+        self.push()
+        for name, value in zip(stmt.parameters, expr.parameters):
+            self.variables[name.literal] = self.evaluate(value)
+        res = self.evaluate(stmt.expression)
+        self.pop()
+        return res

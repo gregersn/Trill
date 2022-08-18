@@ -29,7 +29,7 @@ testcases: List[TestCase] = [
     TestCase('d4#d6', 5, ['(# (d 4) (d 6))'], [[3.5, 3.5]]),
     TestCase('10#(sum 5d6)', 8, ['(# 10 (group (sum (d 5 6))))'], [[5 * 3.5] * 10]),
     TestCase('3d6 U 3d8', 7, ['(U (d 3 6) (d 3 8))'], [[3.5, 3.5, 3.5, 4.5, 4.5, 4.5]]),
-    TestCase('3d6;10d4', 7, None, None, "Parse-error at line 1, column 3"),
+    TestCase('3d6;', 4, None, None, "Parser-error at line 1, column 3: Unexpected token: ;"),
     TestCase('d6 U 3d8', 6, ['(U (d 6) (d 3 8))'], [[3.5, 4.5, 4.5, 4.5]]),
     TestCase('3d6 U d8', 6, ['(U (d 3 6) (d 8))'], [[3.5, 3.5, 3.5, 4.5]]),
     TestCase('1..6', 3, ['(.. 1 6)'], [[1, 2, 3, 4, 5, 6]]),

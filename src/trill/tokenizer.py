@@ -3,7 +3,7 @@ from typing import Any, List
 
 from .tokens import TokenType
 from .tokens import Token
-from . import error
+from .error import handler as error_handler, ScannerError
 from .reserved import KEYWORDS
 
 
@@ -14,10 +14,11 @@ class Scanner:
     _start: int = 0
     _current: int = 0
     _line: int = 1
+    _column: int = 0
 
     def __init__(self, source: str):
         self.source = source
-        error.reset()
+        error_handler.reset()
 
     def scan_tokens(self) -> List[Token]:
         self.tokens = []
@@ -25,7 +26,7 @@ class Scanner:
             self._start = self._current
             self.scan_token()
 
-        self.tokens.append(Token(TokenType.EOF, "\\0", None, self._line))
+        self.tokens.append(Token(TokenType.EOF, "\\0", None, self._line, self._current))
         return self.tokens
 
     def number(self):
@@ -157,6 +158,7 @@ class Scanner:
 
         if character == '\n':
             self._line += 1
+            self._column = 0
             return
 
         if character.isdigit():
@@ -165,13 +167,14 @@ class Scanner:
         if character.isalpha():
             return self.identifier()
 
-        error.error(self._line, f"Unexpected character: {character}")
+        error_handler.report(ScannerError(self._line, self._column, f"Unexpected character: {character}"))
 
     def is_at_end(self):
         return self._current >= len(self.source)
 
     def advance(self):
         self._current += 1
+        self._column += 1
         return self.source[self._current - 1]
 
     def comment(self):
@@ -195,4 +198,4 @@ class Scanner:
 
     def add_token(self, _type: TokenType, literal: Any = None):
         text = self.source[self._start:self._current]
-        self.tokens.append(Token(_type, text, literal, self._line))
+        self.tokens.append(Token(_type, text, literal, self._line, self._start))

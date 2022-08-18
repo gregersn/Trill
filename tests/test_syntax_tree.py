@@ -8,8 +8,8 @@ from trill.ast.expression import Binary, Grouping, Literal, Unary
 def test_printer():
     expression = [
         Binary(
-            Unary(Token(TokenType.MINUS, '-', None, 1), Literal(123)),
-            Token(TokenType.MULTIPLY, '*', None, 1),
+            Unary(Token(TokenType.MINUS, '-', None, 1, 1), Literal(123)),
+            Token(TokenType.MULTIPLY, '*', None, 1, 1),
             Grouping(Literal(45.67)),
         ),
     ]

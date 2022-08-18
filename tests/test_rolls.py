@@ -7,7 +7,7 @@ from trill.interpreter import Interpreter
 from trill.parser import Parser
 from trill.tokenizer import Scanner
 from trill.ast.printer import ASTPrinter
-
+from trill import trill
 from .cases import testcases
 
 
@@ -36,3 +36,11 @@ def test_interpret(roll: str, result: List[Any]):
     res = Interpreter().interpret(expression)
     res = Interpreter().interpret(expression, average=True)
     assert res == result, roll
+
+
+@pytest.mark.parametrize("roll,error", [(case.roll, case.error) for case in testcases if case.error])
+def test_error(roll: str, error: str):
+    res, err = trill(roll)
+    assert res is None
+    assert err is not None
+    assert str(err[0]) == error

@@ -4,6 +4,7 @@ from typing import Any, List, Union
 from .tokens import Token, TokenType
 from .ast import expression
 from .ast import statement
+from .error import handler as error_handler, ParserError
 
 
 class Parser:
@@ -72,8 +73,17 @@ class Parser:
 
         if self.check(TokenType.SEMICOLON):
             expressions = [expr]
+            if self.check(TokenType.SEMICOLON) and not isinstance(expr, expression.Assign):
+                token = self.tokens[self.current]
+                error_handler.report(ParserError(token.line, token.column, f"Unexpected token: {token.lexeme}"))
+
             while self.match(TokenType.SEMICOLON):
+                if not isinstance(expr, expression.Assign):
+                    token = self.tokens[self.current]
+                    error_handler.report(ParserError(token.line, token.column, f"Unexpected token: {token.lexeme}"))
+
                 expr = self.parse_expression()
+
                 expressions.append(expr)
 
             return expression.Block(expressions)
@@ -307,4 +317,5 @@ class Parser:
             self.consume(TokenType.RSQUARE, "Missing ']' to close pair.")
             return expression.Pair(a, b)
 
-        raise Exception(f"Unexpected token: {self.peek().token_type.value}")
+        token = self.tokens[self.current]
+        error_handler.report(ParserError(token.line, token.column, f"Unexpected token: '{token.lexeme}'"))

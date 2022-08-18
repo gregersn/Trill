@@ -40,8 +40,9 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _min_ and _max_ in collection
 - [x] all _minimal_ and all _maximal_ values in collection
 - [x] _median_ value in collection
-- [ ] _least_ n and _largest_ n values in collection
-- [ ] m samples of e ( # )
+- [ ] _least_ n and 
+- [x] _largest_ n values in collection
+- [x] m samples of e ( # )
 - [x] range of values ( .. )
 - [x] _choose_ value from collection
 - [x] _pick_ n values from collection e
@@ -58,16 +59,16 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _foreach x in e1 do e2_
 - [x] _repeat x := e1 while/until e2_
 - [x] _accumulate x := e1 while/until e2_
-- [ ] _function_
+- [x] _function_
 - [ ] _compositional_
-- [ ] _call_
+- [x] _call_
 - [ ] text box of single sample ( ' )
 - [ ] text box of n samples ( n ' )
 - [ ] combine text boxes horisontally ( || )
 - [ ] combine text boxes vertically, left-aligned ( |> )
 - [ ] combine text boxes vertically, right-aligned ( <| )
 - [ ] combine text boxes, centre-aligned ( <> )
-- [ ] Pair of e1,e2 ( [e1, e2])
+- [x] Pair of e1,e2 ( [e1, e2])
 - [ ] First component of pair ( %1 )
 - [ ] Second component of pair ( %2 )
-- [ ] x~v returns value of x if x is defined, else returns v
+- [x] x~v returns value of x if x is defined, else returns v

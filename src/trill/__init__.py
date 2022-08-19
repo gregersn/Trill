@@ -1,3 +1,4 @@
+"""Trill - Troll interpreter."""
 from .tokenizer import Scanner
 from .parser import Parser
 from .interpreter import Interpreter

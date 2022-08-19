@@ -14,8 +14,8 @@ app = typer.Typer(add_completion=False)
 def main():
     """Main function."""
     expression = Binary(
-        Unary(Token(TokenType.MINUS, '-', None, 1), Literal(123)),
-        Token(TokenType.MULTIPLY, '*', None, 1),
+        Unary(Token(TokenType.MINUS, '-', None, 1, 1), Literal(123)),
+        Token(TokenType.MULTIPLY, '*', None, 1, 2),
         Grouping(Literal(45.67)),
     )
 

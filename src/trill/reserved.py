@@ -7,6 +7,8 @@ KEYWORDS = {
     'different': TokenType.DIFFERENT,
     'drop': TokenType.DROP,
     'keep': TokenType.KEEP,
+    'largest': TokenType.LARGEST,
+    'least': TokenType.LEAST,
     'max': TokenType.MAX,
     'maximal': TokenType.MAXIMAL,
     'median': TokenType.MEDIAN,

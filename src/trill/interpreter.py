@@ -142,6 +142,18 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
                     output.append(new_val)
             return output
 
+        if expr.operator.token_type == TokenType.LARGEST:
+            count = self.evaluate(expr.left)
+            if count == 0:
+                return []
+            return list(sorted(self.evaluate(expr.right)))[-count:]
+
+        if expr.operator.token_type == TokenType.LEAST:
+            count = self.evaluate(expr.left)
+            if count == 0:
+                return []
+            return list(sorted(self.evaluate(expr.right)))[:-count]
+
         if isinstance(expr.left, expression.Literal):
             val = self.evaluate(expr.left)
             if isinstance(val, str):
@@ -371,6 +383,6 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.push()
         for name, value in zip(stmt.parameters, expr.parameters):
             self.variables[name.literal] = self.evaluate(value)
-        res = self.evaluate(stmt.expression)
+        res = self.execute(stmt.expression)
         self.pop()
         return res

@@ -48,6 +48,8 @@ class TokenType(Enum):
 
     COUNT = 'count'
     DIFFERENT = 'different'
+    LARGEST = 'largest'
+    LEAST = 'least'
     MAX = 'max'
     MAXIMAL = 'maximal'
     MEDIAN = 'median'
@@ -94,10 +96,11 @@ class Token:
         self.column = column
 
     def __str__(self):
-        return f"{self.token_type.value} {self.lexeme} {self.literal if self.literal is not None else ''}"
+        literal = self.literal if self.literal is not None else ''
+        return f"{self.token_type.value} {self.lexeme} {literal}"
 
     def __repr__(self):
-        return f"<Token {self.token_type.value} {self.lexeme} {self.literal} {self.line}>"
+        return f"<Token {self.token_type.name} {self.lexeme} ({self.line}, {self.column})>"
 
     def __eq__(self, o: object):
         """Check for equality based on content, ignoring position."""

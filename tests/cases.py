@@ -46,6 +46,8 @@ testcases: List[TestCase] = [
     TestCase('max {1, 2, 3}', 8, ['(max (collection 1 2 3))'], [3]),
     TestCase('minimal {1, 1, 2, 3, 3}', 12, ['(minimal (collection 1 1 2 3 3))'], [[1, 1]]),
     TestCase('maximal {1, 1, 2, 3, 3}', 12, ['(maximal (collection 1 1 2 3 3))'], [[3, 3]]),
+    TestCase('largest 3 {4, 5, 2, 4, 7, 2}', 15, None, [[4, 5, 7]]),
+    TestCase('least 3 {4, 5, 2, 4, 7, 2}', 15, None, [[2, 2, 4]]),
     TestCase('2 <= {1, 2, 3}', 9, ['(<= 2 (collection 1 2 3))'], [[2, 3]]),
     TestCase('2 < {1, 2, 3}', 9, ['(< 2 (collection 1 2 3))'], [[3]]),
     TestCase('2 >= {1, 2, 3}', 9, ['(>= 2 (collection 1 2 3))'], [[1, 2]]),
@@ -133,8 +135,8 @@ testcases: List[TestCase] = [
     TestCase('x := 6d6; [max x, count different x]', 14, ['(block (assign x (d 6 6)); (pair (max x) (count (different x))))'], [(3.5, 1)]),
     TestCase('x := {}; !x', 7, ['(block (assign x (collection )); (! x))'], [1]),
     TestCase('x := 7; !x', 6, ['(block (assign x 7); (! x))'], [[]]),
-    TestCase('(min v)*call mul(largest ((count v)-1) v)', 19, ['(* (group (min v)) (call mul largest (group (- (group (count v)) 1)) v))'],
-             None),
+    TestCase('(min v)*call mul(largest ((count v)-1) v)', 19,
+             ['(* (group (min v)) (call mul (largest (group (- (group (count v)) 1)) v)))'], None),
     TestCase("""function foo(v) = v * v\ncall foo(5)""", None, None, [None, 25]),
     TestCase("""function foo(v) = if v then call foo(v - 1) + v else 0\ncall foo(3)""", None, None, [None, 6]),
     TestCase(
@@ -143,8 +145,8 @@ if v then (min v)*call mul(largest ((count v)-1) v)
 else 1
 call mul(5d10)
     """, 37,
-        ['(function mul (v) (if v (* (group (min v)) (call mul largest (group (- (group (count v)) 1)) v)) 1))', '(call mul (d 5 10))'],
-        [None, 5.5]),
+        ['(function mul (v) (if v (* (group (min v)) (call mul (largest (group (- (group (count v)) 1)) v))) 1))', '(call mul (d 5 10))'],
+        [None, 5.5**5]),
     TestCase("""function even(n) =
 if n=0 then 1 else call odd(n-1)
 call even(d9)

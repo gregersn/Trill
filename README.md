@@ -40,7 +40,7 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _min_ and _max_ in collection
 - [x] all _minimal_ and all _maximal_ values in collection
 - [x] _median_ value in collection
-- [ ] _least_ n and 
+- [x] _least_ n and 
 - [x] _largest_ n values in collection
 - [x] m samples of e ( # )
 - [x] range of values ( .. )

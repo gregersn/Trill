@@ -9,6 +9,7 @@ from trill.tokenizer import Scanner
 from trill.ast.printer import ASTPrinter
 from trill import trill
 from .cases import testcases
+from trill.error import handler as error_handler
 
 
 @pytest.mark.parametrize("roll,result", [(case.roll, case.token_count) for case in testcases if case.token_count])
@@ -24,6 +25,7 @@ def test_parse(roll: str, result: List[str]):
     tokens = scanner.scan_tokens()
     parser = Parser(tokens)
     expression = parser.parse()
+    assert not error_handler.had_error, error_handler.error_report
     res = ASTPrinter().print(expression)
     assert res == result, roll
 

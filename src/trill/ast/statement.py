@@ -1,8 +1,6 @@
 """Statements."""
 from dataclasses import dataclass
-from typing import List, Union
-
-from . import expression
+from typing import List
 
 from .base import T, Visitor, Node
 from ..tokens import Token

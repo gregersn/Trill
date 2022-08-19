@@ -28,5 +28,8 @@ where = ["src"]
 include = ["trill"]
 namespaces = false
 
+[tool.pylint]
+max-line-length=140
+
 [tool.pylint."MESSAGE CONTROL"]
 disable="missing-function-docstring,missing-class-docstring,invalid-name,too-few-public-methods"

@@ -1,5 +1,5 @@
 """Parser code."""
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from .tokens import Token, TokenType
 from .ast import expression
@@ -52,17 +52,21 @@ class Parser:
     def consume(self, _type: TokenType, message: str):
         if self.check(_type):
             return self.advance()
-        raise self.error(self.peek(), message)
+        token = self.tokens[self.current]
+        error_handler.report(ParserError(token.line, token.column, message))
 
     def parse(self):
         # roll ->  (function* | expression)
         statements: List[Union[statement.Statement, expression.Expression]] = []
         while not self.is_at_end():
             expr = self.declaration()
+            if expr is None and error_handler.had_error:
+                break
+
             statements.append(expr)
         return statements
 
-    def declaration(self) -> Union[statement.Statement, expression.Expression]:
+    def declaration(self) -> Optional[Union[statement.Statement, expression.Expression]]:
         # statement -> exprStatement | printStatement;
         # if self.match(TokenType.PRINT):
         #     return self.print_Statement()
@@ -70,6 +74,8 @@ class Parser:
             return self.function_declaration()
 
         expr = self.parse_expression()
+        if expr is None:
+            return None
 
         if self.check(TokenType.SEMICOLON):
             expressions = [expr]
@@ -113,9 +119,16 @@ class Parser:
     def repeat_expression(self):
         action = self.assignment()
         if not self.match(TokenType.WHILE, TokenType.UNTIL):
-            raise Exception("Wtf")
+            token = self.tokens[self.current]
+            error_handler.report(ParserError(token.line, token.column, f"Expected WHILE or UNTIL, got {token.token_type}"))
+            return None
         condition = self.previous()
         qualifier = self.parse_expression()
+
+        if qualifier is None:
+            token = self.tokens[self.current]
+            error_handler.report(ParserError(token.line, token.column, "Missing qualifier in repeat-expression"))
+            return None
 
         assert isinstance(action, expression.Assign), action
 
@@ -141,7 +154,7 @@ class Parser:
 
         return statement.Function(identifier, parameters, expr)
 
-    def parse_expression(self) -> expression.Expression:
+    def parse_expression(self) -> Optional[expression.Expression]:
         if self.match(TokenType.IF):
             return self.if_expression()
         if self.match(TokenType.ACCUMULATE):
@@ -150,20 +163,39 @@ class Parser:
             return self.repeat_expression()
         if self.match(TokenType.FOREACH):
             return self.foreach_expression()
+        if self.match(TokenType.LARGEST, TokenType.LEAST):
+            return self.selection_expression()
 
         return self.assignment()
 
+    def selection_expression(self):
+        selector = self.previous()
+
+        count = self.parse_expression()
+
+        selection = self.parse_expression()
+
+        return expression.Binary(count, selector, selection)
+
     def function_call(self):
         name = self.consume(TokenType.IDENTIFIER, "Expected name of function to call.")
+
         parameters: List[expression.Expression] = []
         self.consume(TokenType.LPAREN, "Expect parenthesis for function call")
         while not self.match(TokenType.RPAREN):
-            parameters.append(self.parse_expression())
+            expr = self.parse_expression()
+            if expr is None:
+                break
+            parameters.append(expr)
 
         return expression.Call(name, parameters)
 
-    def assignment(self) -> expression.Expression:
+    def assignment(self) -> Optional[expression.Expression]:
         expr = self.comparison()
+        if expr is None:
+            token = self.tokens[self.current]
+            error_handler.report(ParserError(token.line, token.column, "Parse error, unexpeced {token}"))
+            return None
 
         if self.match(TokenType.ASSIGN):
             _ = self.previous()
@@ -221,6 +253,8 @@ class Parser:
             TokenType.CHOOSE,
             TokenType.COUNT,
             TokenType.DIFFERENT,
+            TokenType.LARGEST,
+            TokenType.LEAST,
             TokenType.MAX,
             TokenType.MAXIMAL,
             TokenType.MEDIAN,
@@ -261,6 +295,7 @@ class Parser:
         if self.match(TokenType.SAMPLES):
             operator = self.previous()
             right = self.parse_expression()
+
             expr = expression.Binary(expr, operator, right)
 
         return expr
@@ -270,6 +305,7 @@ class Parser:
         if self.match(TokenType.DICE):
             operator = self.previous()
             right = self.primary()
+
             return expression.Unary(operator, right)
 
         expr = self.primary()
@@ -278,6 +314,7 @@ class Parser:
         if self.match(TokenType.DICE):
             operator = self.previous()
             right = self.primary()
+
             expr = expression.Binary(expr, operator, right)
 
         return expr
@@ -291,13 +328,16 @@ class Parser:
 
         if self.match(TokenType.LPAREN):
             expr = self.parse_expression()
+
             if self.match(TokenType.RPAREN):
                 return expression.Grouping(expr)
 
             self.consume(TokenType.SEMICOLON, "Expected a semi colon")
             statements: List[expression.Expression] = [expr]
             while not self.match(TokenType.RPAREN):
-                statements.append(self.parse_expression())
+                expr = self.parse_expression()
+
+                statements.append(expr)
 
             return expression.Block(statements)
 
@@ -312,8 +352,10 @@ class Parser:
 
         if self.match(TokenType.LSQUARE):
             a = self.parse_expression()
+
             self.consume(TokenType.COMMA, "Expect ',' to separate pair.")
             b = self.parse_expression()
+
             self.consume(TokenType.RSQUARE, "Missing ']' to close pair.")
             return expression.Pair(a, b)
 

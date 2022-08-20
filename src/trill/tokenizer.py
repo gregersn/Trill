@@ -140,6 +140,13 @@ class Scanner:
         if character == ',':
             return self.add_token(TokenType.COMMA, character)
 
+        if character == '%' and self.peek().isdigit():
+            element = int(self.advance(), 10)
+            if element not in [1, 2]:
+                error_handler.report(ScannerError(self._line, self._column, f"{element} is not a pair value"))
+                return
+            return self.add_token(TokenType.PAIR_VALUE, element)
+
         if character == '#':
             return self.add_token(TokenType.SAMPLES, character)
 

@@ -133,6 +133,8 @@ testcases: List[TestCase] = [
     TestCase('x := 3; x ~ 4', 7, ['(block (assign x 3); (~ x 4))'], [3]),
     TestCase('x ~ 4', 3, ['(~ x 4)'], [4]),
     TestCase('x := 6d6; [max x, count different x]', 14, ['(block (assign x (d 6 6)); (pair (max x) (count (different x))))'], [(3.5, 1)]),
+    TestCase('p := [1, 2]; %1 p', 10, ['(block (assign p (pair 1 2)); (%1 p))'], [1]),
+    TestCase('p := [1, 2]; %2 p', 10, ['(block (assign p (pair 1 2)); (%2 p))'], [2]),
     TestCase('x := {}; !x', 7, ['(block (assign x (collection )); (! x))'], [1]),
     TestCase('x := 7; !x', 6, ['(block (assign x 7); (! x))'], [[]]),
     TestCase('(min v)*call mul(largest ((count v)-1) v)', 19,

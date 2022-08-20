@@ -59,6 +59,10 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
                 return 1
             return []
 
+        if expr.operator.token_type == TokenType.PAIR_VALUE:
+            v = expr.operator.literal
+            return right[v - 1]
+
         if expr.operator.token_type == TokenType.MINUS:
             return -right
 

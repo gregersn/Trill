@@ -14,6 +14,7 @@ class TokenType(Enum):
     RPAREN = ')'
     LSQUARE = '['
     RSQUARE = ']'
+    PAIR_VALUE = '%'
 
     ASSIGN = ':='
     DEFAULT = '~'

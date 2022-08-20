@@ -54,8 +54,8 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] conditional ( if-then-else )
 - [x] probability ( ?p )
 - [x] logical and ( & )
-- [ ] logical not ( ! )
-- [ ] bind x to value of e1 in e1 ( _x := e1; e2_ )
+- [x] logical not ( ! )
+- [x] bind x to value of e1 in e2 ( _x := e1; e2_ )
 - [x] _foreach x in e1 do e2_
 - [x] _repeat x := e1 while/until e2_
 - [x] _accumulate x := e1 while/until e2_
@@ -69,6 +69,6 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [ ] combine text boxes vertically, right-aligned ( <| )
 - [ ] combine text boxes, centre-aligned ( <> )
 - [x] Pair of e1,e2 ( [e1, e2])
-- [ ] First component of pair ( %1 )
-- [ ] Second component of pair ( %2 )
+- [x] First component of pair ( %1 )
+- [x] Second component of pair ( %2 )
 - [x] x~v returns value of x if x is defined, else returns v

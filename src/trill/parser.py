@@ -265,6 +265,7 @@ class Parser:
             TokenType.SUM,
             TokenType.PROBABILITY,
             TokenType.NOT,
+            TokenType.PAIR_VALUE,
         ]
         if self.match(*operators):
             operator = self.previous()

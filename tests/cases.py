@@ -160,4 +160,6 @@ x := d n;
 if x=1 then 1 else x + call down(x)
 call down(10)""", 30, ['(function down (n) (block (assign x (d n)); (if (= x 1) 1 (+ x (call down x)))))', '(call down 10)'], None),
     TestCase("""sum largest 3 4d6""", 6, ["(sum (largest 3 (d 4 6)))"], [3 * 3.5]),
+    TestCase("' sum largest 3 4d6", 7, ["(textbox 1 (sum (largest 3 (d 4 6))))"], [['10.5']]),
+    TestCase("6 ' sum largest 3 4d6", 8, ["(textbox 6 (sum (largest 3 (d 4 6))))"], [['10.5', '10.5', '10.5', '10.5', '10.5', '10.5']]),
 ]

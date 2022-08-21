@@ -66,10 +66,23 @@ class Parser:
             statements.append(expr)
         return statements
 
+    def print_statement(self):
+        if self.match(TokenType.INTEGER):
+            repeats = self.previous().literal
+        else:
+            repeats = 1
+
+        self.consume(TokenType.TEXTBOX, 'Expected a string operator.')
+
+        return statement.Print(self.parse_expression(), repeats)
+
     def declaration(self) -> Optional[Union[statement.Statement, expression.Expression]]:
         # statement -> exprStatement | printStatement;
         if self.match(TokenType.FUNCTION):
             return self.function_declaration()
+
+        if (self.check(TokenType.INTEGER) and self.peek(1).token_type == TokenType.TEXTBOX) or self.check(TokenType.TEXTBOX):
+            return self.print_statement()
 
         expr = self.parse_expression()
         if expr is None:

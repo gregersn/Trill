@@ -38,6 +38,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         for stmt in statements:
             if isinstance(stmt, statement.Function):
                 continue
+            if isinstance(stmt, statement.Statement):
+                output.append(self.execute(stmt))
             if isinstance(stmt, expression.Expression):
                 output.append(self.evaluate(stmt))
         return output
@@ -390,3 +392,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         res = self.execute(stmt.expression)
         self.pop()
         return res
+
+    def visit_Print_Statement(self, stmt: statement.Print):
+        repeats = stmt.repeats
+        expr = stmt.expression
+
+        return [str(self.evaluate(expr)) for _ in range(repeats)]

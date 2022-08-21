@@ -79,6 +79,8 @@ class TokenType(Enum):
     FUNCTION = 'function'
     CALL = 'call'
 
+    TEXTBOX = "'"
+
     EOF = 'eof'
 
 

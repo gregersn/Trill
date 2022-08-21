@@ -62,8 +62,8 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _function_
 - [ ] _compositional_
 - [x] _call_
-- [ ] text box of single sample ( ' )
-- [ ] text box of n samples ( n ' )
+- [x] text box of single sample ( ' )
+- [x] text box of n samples ( n ' )
 - [ ] combine text boxes horisontally ( || )
 - [ ] combine text boxes vertically, left-aligned ( |> )
 - [ ] combine text boxes vertically, right-aligned ( <| )

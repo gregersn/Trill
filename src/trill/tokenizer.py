@@ -68,6 +68,9 @@ class Scanner:
                 return self.add_token(TokenType.LESS_THAN_OR_EQUAL, '<=')
             return self.add_token(TokenType.LESS_THAN, '<')
 
+        if character == "'":
+            return self.add_token(TokenType.TEXTBOX, "'")
+
         if character == '>':
             if self.peek() == '=':
                 self.advance()

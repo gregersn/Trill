@@ -76,3 +76,9 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
         expr = stmt.expression
 
         return self.parenthesize(f"function {name.literal} ({','.join(p.literal for p in parameters)})", expr)
+
+    def visit_Print_Statement(self, stmt: statement.Print):
+        repeats = stmt.repeats
+        expr = stmt.expression
+
+        return self.parenthesize(f"textbox {repeats}", expr)

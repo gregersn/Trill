@@ -47,6 +47,7 @@ testcases: List[TestCase] = [
     TestCase('minimal {1, 1, 2, 3, 3}', 12, ['(minimal (collection 1 1 2 3 3))'], [[1, 1]]),
     TestCase('maximal {1, 1, 2, 3, 3}', 12, ['(maximal (collection 1 1 2 3 3))'], [[3, 3]]),
     TestCase('largest 3 {4, 5, 2, 4, 7, 2}', 15, None, [[4, 5, 7]]),
+    TestCase('largest 3 4d6', 5, ["(largest 3 (d 4 6))"], [[3.5, 3.5, 3.5]]),
     TestCase('least 3 {4, 5, 2, 4, 7, 2}', 15, None, [[2, 2, 4]]),
     TestCase('2 <= {1, 2, 3}', 9, ['(<= 2 (collection 1 2 3))'], [[2, 3]]),
     TestCase('2 < {1, 2, 3}', 9, ['(< 2 (collection 1 2 3))'], [[3]]),
@@ -157,5 +158,6 @@ if n=0 then 0 else call even(n-1)""", 46, None, [None, None, 0]),
     TestCase("""function down(n) =
 x := d n;
 if x=1 then 1 else x + call down(x)
-call down(10)""", 30, ['(function down (n) (block (assign x (d n)); (if (= x 1) 1 (+ x (call down x)))))', '(call down 10)'], None)
+call down(10)""", 30, ['(function down (n) (block (assign x (d n)); (if (= x 1) 1 (+ x (call down x)))))', '(call down 10)'], None),
+    TestCase("""sum largest 3 4d6""", 6, ["(sum (largest 3 (d 4 6)))"], [3 * 3.5]),
 ]

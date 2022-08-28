@@ -68,8 +68,6 @@ class Parser:
 
     def declaration(self) -> Optional[Union[statement.Statement, expression.Expression]]:
         # statement -> exprStatement | printStatement;
-        # if self.match(TokenType.PRINT):
-        #     return self.print_Statement()
         if self.match(TokenType.FUNCTION):
             return self.function_declaration()
 
@@ -163,8 +161,6 @@ class Parser:
             return self.repeat_expression()
         if self.match(TokenType.FOREACH):
             return self.foreach_expression()
-        if self.match(TokenType.LARGEST, TokenType.LEAST):
-            return self.selection_expression()
 
         return self.assignment()
 
@@ -208,28 +204,33 @@ class Parser:
         return expr
 
     def comparison(self) -> expression.Expression:
-        expr = self.term()
-        while False:  # Currently not in use.
+        expr = self.picker()
+        while self.match(TokenType.RANGE, TokenType.DEFAULT):
             operator = self.previous()
-            right = self.term()
+            right = self.picker()
             expr = expression.Binary(expr, operator, right)
 
         return expr
 
+    def picker(self) -> expression.Expression:
+        expr = self.combination()
+        while self.match(TokenType.DROP, TokenType.KEEP, TokenType.PICK, TokenType.MINUSMINUS):
+            operator = self.previous()
+            right = self.combination()
+            expr = expression.Binary(expr, operator, right)
+        return expr
+
+    def combination(self) -> expression.Expression:
+        expr = self.term()
+        while self.match(TokenType.UNION, TokenType.AND):
+            operator = self.previous()
+            right = self.term()
+            expr = expression.Binary(expr, operator, right)
+        return expr
+
     def term(self) -> expression.Expression:
         expr = self.factor()
-        while self.match(
-                TokenType.DROP,
-                TokenType.KEEP,
-                TokenType.MINUS,
-                TokenType.MINUSMINUS,
-                TokenType.PICK,
-                TokenType.PLUS,
-                TokenType.RANGE,
-                TokenType.UNION,
-                TokenType.AND,
-                TokenType.DEFAULT,
-        ):
+        while self.match(TokenType.PLUS, TokenType.MINUS):
             operator = self.previous()
             right = self.factor()
             expr = expression.Binary(expr, operator, right)
@@ -238,7 +239,7 @@ class Parser:
     def factor(self) -> expression.Expression:
         expr = self.unary()
 
-        while self.match(TokenType.DIVIDE, TokenType.MULTIPLY):
+        while self.match(TokenType.DIVIDE, TokenType.MULTIPLY, TokenType.MODULO):
             operator = self.previous()
             right = self.unary()
             expr = expression.Binary(expr, operator, right)
@@ -250,38 +251,55 @@ class Parser:
             return self.function_call()
 
         operators = [
-            TokenType.CHOOSE,
-            TokenType.COUNT,
-            TokenType.DIFFERENT,
-            TokenType.LARGEST,
-            TokenType.LEAST,
-            TokenType.MAX,
-            TokenType.MAXIMAL,
-            TokenType.MEDIAN,
-            TokenType.MIN,
-            TokenType.MINIMAL,
             TokenType.MINUS,
-            TokenType.SIGN,
-            TokenType.SUM,
             TokenType.PROBABILITY,
-            TokenType.NOT,
-            TokenType.PAIR_VALUE,
         ]
         if self.match(*operators):
             operator = self.previous()
-            right = self.unary()
+            right = self.qualifier()
+            return expression.Unary(operator, right)
+
+        return self.qualifier()
+
+    def qualifier(self) -> expression.Expression:
+        dual_operators = [
+            TokenType.LEAST,
+            TokenType.LARGEST,
+        ]
+
+        if self.match(*dual_operators):
+            return self.selection_expression()
+
+        operators = [
+            TokenType.CHOOSE,
+            TokenType.COUNT,
+            TokenType.SUM,
+            TokenType.SIGN,
+            TokenType.MIN,
+            TokenType.MAX,
+            TokenType.DIFFERENT,
+            TokenType.MINIMAL,
+            TokenType.MAXIMAL,
+            TokenType.MEDIAN,
+            TokenType.PAIR_VALUE,
+            TokenType.NOT,
+        ]
+        if self.match(*operators):
+            operator = self.previous()
+            right = self.qualifier()
             return expression.Unary(operator, right)
 
         return self.filter()
 
     def filter(self):
         expr = self.samples()
+
         while self.match(
+                TokenType.EQUAL,
                 TokenType.LESS_THAN,
                 TokenType.GREATER_THAN,
                 TokenType.LESS_THAN_OR_EQUAL,
                 TokenType.GREATER_THAN_OR_EQUAL,
-                TokenType.EQUAL,
                 TokenType.NOT_EQUAL,
         ):
             operator = self.previous()
@@ -302,23 +320,24 @@ class Parser:
         return expr
 
     def diceroll(self) -> expression.Expression:
-        # A single die
-        if self.match(TokenType.DICE):
-            operator = self.previous()
-            right = self.primary()
-
-            return expression.Unary(operator, right)
-
-        expr = self.primary()
+        expr = self.single_roll()
 
         # Multiple dice
         if self.match(TokenType.DICE):
             operator = self.previous()
-            right = self.primary()
+            right = self.single_roll()
 
             expr = expression.Binary(expr, operator, right)
 
         return expr
+
+    def single_roll(self) -> expression.Expression:
+        if self.match(TokenType.DICE):
+            operator = self.previous()
+            right = self.primary()
+            return expression.Unary(operator, right)
+
+        return self.primary()
 
     def primary(self):
         if self.match(TokenType.INTEGER, TokenType.FLOAT):

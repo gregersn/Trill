@@ -11,6 +11,15 @@ Rolling a single die: `trill d12`
 
 Rolling multiple die: `trill 3d6`
 
+## Use from a python script
+
+```
+from trill import trill
+
+result, errors = trill("3d6")
+```
+
+
 ## Running tests
 
 From the `src` folder:

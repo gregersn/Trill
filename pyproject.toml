@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trill"
-version = "0.0.2"
+version = "0.0.3"
 description = "Troll language parser and interpreter."
 readme = "README.md"
 authors = [
@@ -29,7 +29,7 @@ trill = "trill.main:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["trill"]
+include = ["trill*"]
 namespaces = false
 
 [tool.pylint]

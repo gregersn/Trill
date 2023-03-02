@@ -8,12 +8,11 @@ SOURCE_PACKAGE := $(BUILD_DIR)/$(SOURCE_PACKAGE_NAME)
 WHEEL_PACKAGE := $(BUILD_DIR)/$(WHEEL_PACKAGE_NAME)
 
 
-$(SOURCE_PACKAGE): dist
-$(WHEEL_PACKAGE): dist
+$(SOURCE_PACKAGE) $(WHEEL_PACKAGE): $(wildcard src/**/*.py)
+	python3 -m build
 
 .PHONY: dist
-dist: src/**/*.py
-	python3 -m build
+dist: $(SOURCE_PACKAGE) $(WHEEL_PACKAGE)
 
 
 .PHONY: upload_test
@@ -31,3 +30,13 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf src/trill.egg-info
 	rm -f .coverage
+
+
+.prepped: requirements-dev.txt
+	python3 -m venv .venv
+	.venv/bin/python3 -m pip install -r requirements-dev.txt
+	touch .prepped
+
+.PHONY: init
+init: .prepped
+

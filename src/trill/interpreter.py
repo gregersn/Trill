@@ -8,6 +8,14 @@ from .tokens import TokenType
 T = TypeVar('T')
 
 
+class UnknownOperator(Exception):
+    """Unknown operator."""
+
+
+class UnknownType(Exception):
+    """Unknown data types in input."""
+
+
 class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]):
     average: bool = False
 
@@ -131,7 +139,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             else:
                 return cast(List[Any], [])
 
-        raise Exception(f"Unknown operator {expr.operator.token_type} in unary expression")
+        raise UnknownOperator(f"Unknown operator {expr.operator.token_type} in unary expression")
 
     def visit_Binary_Expression(self, expr: expression.Binary):
         if expr.operator.token_type == TokenType.DEFAULT:
@@ -179,7 +187,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             right = self.evaluate(expr.right)
 
         if not (isinstance(left, (float, int, list)) and isinstance(right, (float, int, list))):
-            raise Exception("Whatt now")
+            raise UnknownType("Whatt now")
 
         if expr.operator.token_type == TokenType.DICE:
             start = 0 if expr.operator.lexeme == 'z' else 1
@@ -204,7 +212,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
         if expr.operator.token_type == TokenType.PICK:
             if isinstance(left, int):
-                raise Exception("Unexpected integer.")
+                raise UnknownType("Unexpected integer.")
             samples = min(len(left), right)
             if self.average:
                 offset = samples // 2
@@ -287,7 +295,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             if expr.operator.token_type == TokenType.NOT_EQUAL:
                 return [v for v in right if left != v]
 
-        raise Exception(f"Unknown operator {expr.operator.token_type} in binary expression")
+        raise UnknownOperator(f"Unknown operator {expr.operator.token_type} in binary expression")
 
     def visit_Grouping_Expression(self, expr: expression.Grouping):
         return self.evaluate(expr.expression)
@@ -374,7 +382,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             elif isinstance(val, list):
                 result += val
             else:
-                raise Exception("Unknown stuff")
+                raise UnknownType(f"Unknown type: {type(val)}")
 
         self.pop()
 

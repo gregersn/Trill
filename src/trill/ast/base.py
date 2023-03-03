@@ -4,13 +4,16 @@ from typing import Any, TypeVar, Generic
 
 T = TypeVar('T')
 
+class UnknownNodeType(Exception):
+    """Unknown node type."""
+
 
 class Visitor(Generic[T]):
     """Visitor base class."""
 
     def visit_generic(self, node: 'Node'):
         """Visit a generic node."""
-        raise Exception(f"No visit_{type(node).__name__} method")
+        raise UnknownNodeType(f"No visit_{type(node).__name__} method")
 
 
 @dataclass

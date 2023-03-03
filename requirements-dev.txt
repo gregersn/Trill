@@ -1,2 +1,5 @@
 build
 twine
+pytest
+pylint
+

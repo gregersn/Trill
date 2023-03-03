@@ -60,10 +60,12 @@ class Parser:
         statements: List[Union[statement.Statement, expression.Expression]] = []
         while not self.is_at_end():
             expr = self.declaration()
+            if expr:
+                statements.append(expr)
+
             if expr is None and error_handler.had_error:
                 break
 
-            statements.append(expr)
         return statements
 
     def print_statement(self):
@@ -101,7 +103,8 @@ class Parser:
 
                 expr = self.parse_expression()
 
-                expressions.append(expr)
+                if expr:
+                    expressions.append(expr)
 
             return expression.Block(expressions)
 
@@ -114,6 +117,10 @@ class Parser:
         self.consume(TokenType.ELSE, "Missing ELSE after true result")
         false_result = self.parse_expression()
 
+        assert condition
+        assert true_result
+        assert false_result
+
         return expression.Conditional(condition, true_result, false_result)
 
     def foreach_expression(self):
@@ -124,6 +131,8 @@ class Parser:
         block = self.parse_expression()
 
         assert isinstance(iterator, expression.Variable)
+        assert source
+        assert block
 
         return expression.Foreach(iterator, source, block)
 
@@ -150,6 +159,8 @@ class Parser:
         self.consume(TokenType.WHILE, "Expect a clause in accumulation")
         qualifier = self.parse_expression()
         assert isinstance(action, expression.Assign)
+        assert qualifier
+
         return expression.Accumulate(action, qualifier)
 
     def function_declaration(self) -> statement.Function:
@@ -158,11 +169,15 @@ class Parser:
         self.consume(TokenType.LPAREN, "Expect '(' after function name.")
         parameters: List[Token] = []
         while not self.match(TokenType.RPAREN):
-            parameters.append(self.consume(TokenType.IDENTIFIER, "Expect variable name"))
+            token = self.consume(TokenType.IDENTIFIER, "Expect variable name")
+            assert token
+            parameters.append(token)
 
         self.consume(TokenType.EQUAL, "Expect '=' before function body.")
         expr = self.declaration()
 
+        assert identifier
+        assert expr
         return statement.Function(identifier, parameters, expr)
 
     def parse_expression(self) -> Optional[expression.Expression]:
@@ -184,6 +199,8 @@ class Parser:
 
         selection = self.parse_expression()
 
+        assert count
+        assert selection
         return expression.Binary(count, selector, selection)
 
     def function_call(self):
@@ -197,6 +214,7 @@ class Parser:
                 break
             parameters.append(expr)
 
+        assert name
         return expression.Call(name, parameters)
 
     def assignment(self) -> Optional[expression.Expression]:
@@ -212,54 +230,65 @@ class Parser:
 
             if isinstance(expr, expression.Variable):
                 name = expr.name
+                assert value
                 return expression.Assign(name, value)
 
         return expr
 
-    def comparison(self) -> expression.Expression:
+    def comparison(self) -> Optional[expression.Expression]:
         expr = self.picker()
         while self.match(TokenType.RANGE, TokenType.DEFAULT):
             operator = self.previous()
             right = self.picker()
+            assert expr
+            assert right
             expr = expression.Binary(expr, operator, right)
 
         return expr
 
-    def picker(self) -> expression.Expression:
+    def picker(self) -> Optional[expression.Expression]:
         expr = self.combination()
         while self.match(TokenType.DROP, TokenType.KEEP, TokenType.PICK, TokenType.MINUSMINUS):
             operator = self.previous()
             right = self.combination()
+            assert expr
+            assert right
             expr = expression.Binary(expr, operator, right)
         return expr
 
-    def combination(self) -> expression.Expression:
+    def combination(self) -> Optional[expression.Expression]:
         expr = self.term()
         while self.match(TokenType.UNION, TokenType.AND):
             operator = self.previous()
             right = self.term()
+            assert expr
+            assert right
             expr = expression.Binary(expr, operator, right)
         return expr
 
-    def term(self) -> expression.Expression:
+    def term(self) -> Optional[expression.Expression]:
         expr = self.factor()
         while self.match(TokenType.PLUS, TokenType.MINUS):
             operator = self.previous()
             right = self.factor()
+            assert expr
+            assert right
             expr = expression.Binary(expr, operator, right)
         return expr
 
-    def factor(self) -> expression.Expression:
+    def factor(self) -> Optional[expression.Expression]:
         expr = self.unary()
 
         while self.match(TokenType.DIVIDE, TokenType.MULTIPLY, TokenType.MODULO):
             operator = self.previous()
             right = self.unary()
+            assert expr
+            assert right
             expr = expression.Binary(expr, operator, right)
 
         return expr
 
-    def unary(self) -> expression.Expression:
+    def unary(self) -> Optional[expression.Expression]:
         if self.match(TokenType.CALL):
             return self.function_call()
 
@@ -270,11 +299,12 @@ class Parser:
         if self.match(*operators):
             operator = self.previous()
             right = self.qualifier()
+            assert right
             return expression.Unary(operator, right)
 
         return self.qualifier()
 
-    def qualifier(self) -> expression.Expression:
+    def qualifier(self) -> Optional[expression.Expression]:
         dual_operators = [
             TokenType.LEAST,
             TokenType.LARGEST,
@@ -300,6 +330,7 @@ class Parser:
         if self.match(*operators):
             operator = self.previous()
             right = self.qualifier()
+            assert right
             return expression.Unary(operator, right)
 
         return self.filter()
@@ -317,40 +348,47 @@ class Parser:
         ):
             operator = self.previous()
             right = self.factor()
+            assert right
             expr = expression.Binary(expr, operator, right)
 
         return expr
 
-    def samples(self) -> expression.Expression:
+    def samples(self) -> Optional[expression.Expression]:
         expr = self.diceroll()
 
         if self.match(TokenType.SAMPLES):
             operator = self.previous()
             right = self.parse_expression()
-
+            assert right
+            assert expr
             expr = expression.Binary(expr, operator, right)
 
         return expr
 
-    def diceroll(self) -> expression.Expression:
+    def diceroll(self) -> Optional[expression.Expression]:
         expr = self.single_roll()
 
         # Multiple dice
         if self.match(TokenType.DICE):
             operator = self.previous()
             right = self.single_roll()
+            assert expr
+            assert right
 
             expr = expression.Binary(expr, operator, right)
 
         return expr
 
-    def single_roll(self) -> expression.Expression:
+    def single_roll(self) -> Optional[expression.Expression]:
         if self.match(TokenType.DICE):
             operator = self.previous()
             right = self.primary()
+            assert right
             return expression.Unary(operator, right)
 
-        return self.primary()
+        res = self.primary()
+
+        return res
 
     def primary(self):
         if self.match(TokenType.INTEGER, TokenType.FLOAT):
@@ -361,6 +399,7 @@ class Parser:
 
         if self.match(TokenType.LPAREN):
             expr = self.parse_expression()
+            assert expr
 
             if self.match(TokenType.RPAREN):
                 return expression.Grouping(expr)
@@ -369,7 +408,7 @@ class Parser:
             statements: List[expression.Expression] = [expr]
             while not self.match(TokenType.RPAREN):
                 expr = self.parse_expression()
-
+                assert expr
                 statements.append(expr)
 
             return expression.Block(statements)
@@ -390,6 +429,8 @@ class Parser:
             b = self.parse_expression()
 
             self.consume(TokenType.RSQUARE, "Missing ']' to close pair.")
+            assert a
+            assert b
             return expression.Pair(a, b)
 
         token = self.tokens[self.current]

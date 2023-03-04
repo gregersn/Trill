@@ -19,6 +19,8 @@ from trill import trill
 result, errors = trill("3d6")
 ```
 
+See further examples in the examples folder.
+
 
 ## Running tests
 

@@ -34,7 +34,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
     def pop(self):
         self.variables = self.variables.parents
 
-    def interpret(self, statements: List[Union[expression.Expression, statement.Statement]], average: bool = False):
+    def interpret(self,
+                  statements: List[Union[expression.Expression, statement.Statement]],
+                  average: bool = False) -> List[Union[Number, NumberList, str]]:
         self.average = average
         self.variables = ChainMap({})
         output: List[Any] = []

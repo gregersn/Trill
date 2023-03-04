@@ -1,7 +1,7 @@
 """Troll tokenizer."""
-from typing import List, Union
+from typing import List
 
-from .tokens import TokenType
+from .tokens import TokenLiteral, TokenType
 from .tokens import Token
 from .error import handler as error_handler, ScannerError
 from .reserved import KEYWORDS
@@ -206,6 +206,6 @@ class Tokenizer:
             return '\0'
         return self.source[self._current + 1]
 
-    def add_token(self, _type: TokenType, literal: Union[str, int, float]):
+    def add_token(self, _type: TokenType, literal: TokenLiteral):
         text = self.source[self._start:self._current]
         self.tokens.append(Token(_type, text, literal, self._line, self._start))

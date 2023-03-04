@@ -2,4 +2,4 @@ build
 twine
 pytest
 pylint
-
+pytest-cov

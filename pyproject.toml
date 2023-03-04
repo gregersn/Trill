@@ -30,6 +30,7 @@ trill = "trill.main:app"
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["trill*"]
+exclude = ["trill.tests*"]
 namespaces = false
 
 [tool.pylint]
@@ -37,3 +38,11 @@ max-line-length=140
 
 [tool.pylint."MESSAGE CONTROL"]
 disable="missing-function-docstring,missing-class-docstring,invalid-name,too-few-public-methods"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[tool.coverage.run]
+omit=["src/trill/tests/*"]

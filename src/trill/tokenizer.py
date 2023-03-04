@@ -26,7 +26,8 @@ class Tokenizer:
             self._start = self._current
             self.scan_token()
 
-        self.tokens.append(Token(TokenType.EOF, "\\0", None, self._line, self._current))
+        self.tokens.append(
+            Token(TokenType.EOF, "\\0", None, self._line, self._current))
         return self.tokens
 
     def number(self):
@@ -45,9 +46,11 @@ class Tokenizer:
                 self.advance()
 
         if is_float:
-            self.add_token(TokenType.FLOAT, float(self.source[self._start:self._current]))
+            self.add_token(TokenType.FLOAT, float(
+                self.source[self._start:self._current]))
         else:
-            self.add_token(TokenType.INTEGER, int(self.source[self._start:self._current], 10))
+            self.add_token(TokenType.INTEGER, int(
+                self.source[self._start:self._current], 10))
 
     def identifier(self):
         """Identifiers are either custom names or reserved keywords."""
@@ -146,7 +149,9 @@ class Tokenizer:
         if character == '%' and self.peek().isdigit():
             element = int(self.advance(), 10)
             if element not in [1, 2]:
-                error_handler.report(ScannerError(self._line, self._column, f"{element} is not a pair value"))
+                error_handler.report(ScannerError(
+                    self._line, self._column,
+                    f"{element} is not a pair value"),)
                 return
             return self.add_token(TokenType.PAIR_VALUE, element)
 
@@ -160,8 +165,9 @@ class Tokenizer:
             self.advance()
             return self.add_token(TokenType.RANGE, '..')
 
-        if (character.lower() == 'd' or character.lower() == 'z') and not self.peek().isalpha():
-            return self.add_token(TokenType.DICE, character)
+        if (character.lower() == 'd' or character.lower() == 'z'):
+            if not self.peek().isalpha():
+                return self.add_token(TokenType.DICE, character)
 
         if character in [' ', '\t', '\r']:
             return
@@ -177,7 +183,8 @@ class Tokenizer:
         if character.isalpha():
             return self.identifier()
 
-        error_handler.report(ScannerError(self._line, self._column, f"Unexpected character: {character}"))
+        error_handler.report(ScannerError(
+            self._line, self._column, f"Unexpected character: {character}"))
 
     def is_at_end(self):
         return self._current >= len(self.source)
@@ -208,4 +215,5 @@ class Tokenizer:
 
     def add_token(self, _type: TokenType, literal: TokenLiteral):
         text = self.source[self._start:self._current]
-        self.tokens.append(Token(_type, text, literal, self._line, self._start))
+        self.tokens.append(
+            Token(_type, text, literal, self._line, self._start))

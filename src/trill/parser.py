@@ -46,8 +46,9 @@ class Parser:
                 return True
         return False
 
-    def error(self, token: Token, message: str):
-        return Exception(f"{str(token)}: {message}")
+    def error(self, message: str):
+        token = self.tokens[self.current]
+        error_handler.report(ParserError(token.line, token.column, message))
 
     def consume(self, _type: TokenType, message: str):
         if self.check(_type):
@@ -57,7 +58,8 @@ class Parser:
 
     def parse(self):
         # roll ->  (function* | expression)
-        statements: List[Union[statement.Statement, expression.Expression]] = []
+        statements: List[Union[statement.Statement,
+                               expression.Expression]] = []
         while not self.is_at_end():
             expr = self.declaration()
             if expr:
@@ -75,7 +77,9 @@ class Parser:
             repeats = 1
 
         self.consume(TokenType.TEXTBOX, 'Expected a string operator.')
-        assert isinstance(repeats, int)
+        if not isinstance(repeats, int):
+            self.error(f"Type error: expected int, got {type(repeats)}")
+            return None
 
         return statement.Print(self.parse_expression(), repeats)
 
@@ -95,12 +99,14 @@ class Parser:
             expressions = [expr]
             if self.check(TokenType.SEMICOLON) and not isinstance(expr, expression.Assign):
                 token = self.tokens[self.current]
-                error_handler.report(ParserError(token.line, token.column, f"Unexpected token: {token.lexeme}"))
+                error_handler.report(ParserError(
+                    token.line, token.column, f"Unexpected token: {token.lexeme}"))
 
             while self.match(TokenType.SEMICOLON):
                 if not isinstance(expr, expression.Assign):
                     token = self.tokens[self.current]
-                    error_handler.report(ParserError(token.line, token.column, f"Unexpected token: {token.lexeme}"))
+                    error_handler.report(ParserError(
+                        token.line, token.column, f"Unexpected token: {token.lexeme}"))
 
                 expr = self.parse_expression()
 
@@ -118,9 +124,22 @@ class Parser:
         self.consume(TokenType.ELSE, "Missing ELSE after true result")
         false_result = self.parse_expression()
 
-        assert condition
-        assert true_result
-        assert false_result
+        err = False
+
+        if not condition:
+            self.error("Missing condition in if expression")
+            err = True
+
+        if not true_result:
+            self.error("Missing positive result in if-expression")
+            err = True
+
+        if not false_result:
+            self.error("Missing negative result in if-expression")
+            err = True
+
+        if (err):
+            return None
 
         return expression.Conditional(condition, true_result, false_result)
 
@@ -131,9 +150,23 @@ class Parser:
         self.consume(TokenType.DO, "Expected DO")
         block = self.parse_expression()
 
-        assert isinstance(iterator, expression.Variable)
-        assert source
-        assert block
+        err = False
+
+        if not isinstance(iterator, expression.Variable):
+            self.error(
+                f"Expected iterator to be a variable, got {type(expression.Variable)}")
+            err = True
+
+        if not source:
+            self.error("Missing loop source")
+            err = True
+
+        if not block:
+            self.error("Missing loop block")
+            err = True
+
+        if err:
+            return None
 
         return expression.Foreach(iterator, source, block)
 
@@ -141,17 +174,21 @@ class Parser:
         action = self.assignment()
         if not self.match(TokenType.WHILE, TokenType.UNTIL):
             token = self.tokens[self.current]
-            error_handler.report(ParserError(token.line, token.column, f"Expected WHILE or UNTIL, got {token.token_type}"))
+            error_handler.report(ParserError(
+                token.line, token.column, f"Expected WHILE or UNTIL, got {token.token_type}"))
             return None
         condition = self.previous()
         qualifier = self.parse_expression()
 
         if qualifier is None:
             token = self.tokens[self.current]
-            error_handler.report(ParserError(token.line, token.column, "Missing qualifier in repeat-expression"))
+            error_handler.report(ParserError(
+                token.line, token.column, "Missing qualifier in repeat-expression"))
             return None
 
-        assert isinstance(action, expression.Assign), action
+        if not isinstance(action, expression.Assign):
+            self.error(f"Expected assignment, got {action}")
+            return None
 
         return expression.Repeat(condition, action, qualifier)
 
@@ -159,26 +196,50 @@ class Parser:
         action = self.assignment()
         self.consume(TokenType.WHILE, "Expect a clause in accumulation")
         qualifier = self.parse_expression()
-        assert isinstance(action, expression.Assign)
-        assert qualifier
+
+        err = None
+        if not isinstance(action, expression.Assign):
+            self.error(f"Expected assignment, got {action}")
+            err = True
+
+        if not qualifier:
+            self.error("Missing qualifier")
+            err = True
+
+        if err:
+            return None
 
         return expression.Accumulate(action, qualifier)
 
-    def function_declaration(self) -> statement.Function:
-        identifier = self.consume(TokenType.IDENTIFIER, "Expected function identifier.")
+    def function_declaration(self) -> Optional[statement.Function]:
+        identifier = self.consume(
+            TokenType.IDENTIFIER, "Expected function identifier.")
 
         self.consume(TokenType.LPAREN, "Expect '(' after function name.")
         parameters: List[Token] = []
+        err = False
         while not self.match(TokenType.RPAREN):
             token = self.consume(TokenType.IDENTIFIER, "Expect variable name")
-            assert token
-            parameters.append(token)
+            if not token:
+                self.error(f"Expected token, got {token}")
+                err = True
+            else:
+                parameters.append(token)
 
         self.consume(TokenType.EQUAL, "Expect '=' before function body.")
         expr = self.declaration()
 
-        assert identifier
-        assert expr
+        if not identifier:
+            self.error("Missing expected identifier")
+            return None
+
+        if not expr:
+            self.error("Missing expected expression")
+            return None
+
+        if err:
+            return None
+
         return statement.Function(identifier, parameters, expr)
 
     def parse_expression(self) -> Optional[expression.Expression]:
@@ -200,12 +261,19 @@ class Parser:
 
         selection = self.parse_expression()
 
-        assert count
-        assert selection
+        if not count:
+            self.error("Missing count in selection expression")
+            return None
+
+        if not selection:
+            self.error("Missing selection")
+            return None
+
         return expression.Binary(count, selector, selection)
 
     def function_call(self):
-        name = self.consume(TokenType.IDENTIFIER, "Expected name of function to call.")
+        name = self.consume(TokenType.IDENTIFIER,
+                            "Expected name of function to call.")
 
         parameters: List[expression.Expression] = []
         self.consume(TokenType.LPAREN, "Expect parenthesis for function call")
@@ -215,14 +283,18 @@ class Parser:
                 break
             parameters.append(expr)
 
-        assert name
+        if not name:
+            self.error("Missing function name")
+            return None
+
         return expression.Call(name, parameters)
 
     def assignment(self) -> Optional[expression.Expression]:
         expr = self.comparison()
         if expr is None:
             token = self.tokens[self.current]
-            error_handler.report(ParserError(token.line, token.column, "Parse error, unexpeced {token}"))
+            error_handler.report(ParserError(
+                token.line, token.column, "Parse error, unexpeced {token}"))
             return None
 
         if self.match(TokenType.ASSIGN):
@@ -231,7 +303,10 @@ class Parser:
 
             if isinstance(expr, expression.Variable):
                 name = expr.name
-                assert value
+                if not value:
+                    self.error("Missing value in assignment")
+                    return None
+
                 return expression.Assign(name, value)
 
         return expr
@@ -241,8 +316,15 @@ class Parser:
         while self.match(TokenType.RANGE, TokenType.DEFAULT):
             operator = self.previous()
             right = self.picker()
-            assert expr
-            assert right
+
+            if not expr:
+                self.error("Missing left hand expression in comparison.")
+                return None
+
+            if not right:
+                self.error("Missing right hand expression in comparison.")
+                return None
+
             expr = expression.Binary(expr, operator, right)
 
         return expr
@@ -252,8 +334,15 @@ class Parser:
         while self.match(TokenType.DROP, TokenType.KEEP, TokenType.PICK, TokenType.MINUSMINUS):
             operator = self.previous()
             right = self.combination()
-            assert expr
-            assert right
+
+            if not expr:
+                self.error("Missing left hand expression in picker.")
+                return None
+
+            if not right:
+                self.error("Missing right hand expression in picker.")
+                return None
+
             expr = expression.Binary(expr, operator, right)
         return expr
 
@@ -262,8 +351,15 @@ class Parser:
         while self.match(TokenType.UNION, TokenType.AND):
             operator = self.previous()
             right = self.term()
-            assert expr
-            assert right
+
+            if not expr:
+                self.error("Missing left hand expression in combination.")
+                return None
+
+            if not right:
+                self.error("Missing right hand expression in combination.")
+                return None
+
             expr = expression.Binary(expr, operator, right)
         return expr
 
@@ -272,8 +368,15 @@ class Parser:
         while self.match(TokenType.PLUS, TokenType.MINUS):
             operator = self.previous()
             right = self.factor()
-            assert expr
-            assert right
+
+            if not expr:
+                self.error("Missing left hand expression in term.")
+                return None
+
+            if not right:
+                self.error("Missing right hand expression in term.")
+                return None
+
             expr = expression.Binary(expr, operator, right)
         return expr
 
@@ -283,8 +386,15 @@ class Parser:
         while self.match(TokenType.DIVIDE, TokenType.MULTIPLY, TokenType.MODULO):
             operator = self.previous()
             right = self.unary()
-            assert expr
-            assert right
+
+            if not expr:
+                self.error("Missing left hand expression in factor.")
+                return None
+
+            if not right:
+                self.error("Missing right hand expression in factor.")
+                return None
+
             expr = expression.Binary(expr, operator, right)
 
         return expr
@@ -299,9 +409,13 @@ class Parser:
         ]
         if self.match(*operators):
             operator = self.previous()
-            right = self.qualifier()
-            assert right
-            return expression.Unary(operator, right)
+            qualifier = self.qualifier()
+
+            if not qualifier:
+                self.error("Missing qualifier")
+                return None
+
+            return expression.Unary(operator, qualifier)
 
         return self.qualifier()
 
@@ -330,9 +444,12 @@ class Parser:
         ]
         if self.match(*operators):
             operator = self.previous()
-            right = self.qualifier()
-            assert right
-            return expression.Unary(operator, right)
+            qualifier = self.qualifier()
+            if not qualifier:
+                self.error("Missing qualifier")
+                return None
+
+            return expression.Unary(operator, qualifier)
 
         return self.filter()
 
@@ -348,9 +465,12 @@ class Parser:
                 TokenType.NOT_EQUAL,
         ):
             operator = self.previous()
-            right = self.factor()
-            assert right
-            expr = expression.Binary(expr, operator, right)
+            factor = self.factor()
+            if not factor:
+                self.error("Missing factor")
+                return None
+
+            expr = expression.Binary(expr, operator, factor)
 
         return expr
 
@@ -360,8 +480,15 @@ class Parser:
         if self.match(TokenType.SAMPLES):
             operator = self.previous()
             right = self.parse_expression()
-            assert right
-            assert expr
+
+            if not expr:
+                self.error("Missing left hand expression in samples.")
+                return None
+
+            if not right:
+                self.error("Missing right hand expression in samples.")
+                return None
+
             expr = expression.Binary(expr, operator, right)
 
         return expr
@@ -373,8 +500,14 @@ class Parser:
         if self.match(TokenType.DICE):
             operator = self.previous()
             right = self.single_roll()
-            assert expr
-            assert right
+
+            if not expr:
+                self.error("Missing left hand expression in diceroll.")
+                return None
+
+            if not right:
+                self.error("Missing right hand expression in diceroll.")
+                return None
 
             expr = expression.Binary(expr, operator, right)
 
@@ -384,7 +517,11 @@ class Parser:
         if self.match(TokenType.DICE):
             operator = self.previous()
             right = self.primary()
-            assert right
+
+            if not right:
+                self.error("Missing dice size")
+                return None
+
             return expression.Unary(operator, right)
 
         res = self.primary()
@@ -400,7 +537,10 @@ class Parser:
 
         if self.match(TokenType.LPAREN):
             expr = self.parse_expression()
-            assert expr
+
+            if not expr:
+                self.error("Missing expression")
+                return None
 
             if self.match(TokenType.RPAREN):
                 return expression.Grouping(expr)
@@ -409,7 +549,11 @@ class Parser:
             statements: List[expression.Expression] = [expr]
             while not self.match(TokenType.RPAREN):
                 expr = self.parse_expression()
-                assert expr
+
+                if not expr:
+                    self.error("Invalid expression.")
+                    continue
+
                 statements.append(expr)
 
             return expression.Block(statements)
@@ -419,7 +563,8 @@ class Parser:
             while not self.check(TokenType.RBRACKET):
                 elements.append(self.parse_expression())
                 if not self.check(TokenType.RBRACKET):
-                    self.consume(TokenType.COMMA, "Expect ',' to separate elements.")
+                    self.consume(TokenType.COMMA,
+                                 "Expect ',' to separate elements.")
             self.consume(TokenType.RBRACKET, "Missing '}' to close list.")
             return expression.List(elements)
 
@@ -430,9 +575,21 @@ class Parser:
             b = self.parse_expression()
 
             self.consume(TokenType.RSQUARE, "Missing ']' to close pair.")
-            assert a
-            assert b
+
+            err = False
+            if not a:
+                self.error("Missing first part of pair")
+                err = True
+
+            if not b:
+                self.error("Missing second part of pair")
+                err = True
+
+            if err:
+                return None
+
             return expression.Pair(a, b)
 
         token = self.tokens[self.current]
-        error_handler.report(ParserError(token.line, token.column, f"Unexpected token: '{token.lexeme}'"))
+        error_handler.report(ParserError(
+            token.line, token.column, f"Unexpected token: '{token.lexeme}'"))

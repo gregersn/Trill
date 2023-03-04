@@ -33,6 +33,15 @@ upload: $(SOURCE_PACKAGE) $(WHEEL_PACKAGE)
 	echo "Upload with twine"
 	python3 -m twine upload dist/*
 
+.PHONY: test
+test: .requirements
+	.venv/bin/python3 -m pytest
+
+.PHONY: coverage
+coverage: .requirements
+	.venv/bin/python3 -m pytest --cov=trill --cov-report html
+
+
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)

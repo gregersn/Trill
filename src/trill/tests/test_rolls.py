@@ -8,9 +8,9 @@ from trill.parser import Parser
 from trill.tokenizer import Tokenizer
 from trill.ast.printer import ASTPrinter
 from trill import trill
-from .cases import testcases
 from trill.error import handler as error_handler
 
+from trill.tests.cases import testcases
 
 @pytest.mark.parametrize("roll,result", [(case.roll, case.token_count) for case in testcases if case.token_count])
 def test_tokenizer(roll: str, result: int):

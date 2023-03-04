@@ -161,7 +161,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             else:
                 return cast(List[Any], [])
 
-        raise UnknownOperator(f"Unknown operator {token_type} in unary expression")
+        raise UnknownOperator(
+            f"Unknown operator {token_type} in unary expression")
 
     def visit_Binary_Expression(self, expr: expression.Binary):
         token_type = expr.operator.token_type
@@ -321,7 +322,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             if token_type == TokenType.NOT_EQUAL:
                 return [v for v in right if left != v]
 
-        assert isinstance(left,(int, float))
+        assert isinstance(left, (int, float))
         assert isinstance(right, (int, float))
 
         if token_type == TokenType.PLUS:
@@ -336,7 +337,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         if token_type == TokenType.MULTIPLY:
             return left * right
 
-        raise UnknownOperator(f"Unknown operator {expr.operator.token_type} in binary expression")
+        raise UnknownOperator(
+            f"Unknown operator {expr.operator.token_type} in binary expression")
 
     def visit_Grouping_Expression(self, expr: expression.Grouping):
         return self.evaluate(expr.expression)
@@ -450,7 +452,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             assert isinstance(name.literal, str)
             self.variables[name.literal] = self.evaluate(value)
 
-        assert isinstance(stmt.expression, (statement.Expression, statement.Statement))
+        assert isinstance(
+            stmt.expression, (statement.Expression, statement.Statement))
 
         if isinstance(stmt.expression, statement.Expression):
             res = self.evaluate(stmt.expression)

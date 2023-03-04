@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trill"
-version = "0.0.3"
+version = "0.0.4"
 description = "Troll language parser and interpreter."
 readme = "README.md"
 authors = [

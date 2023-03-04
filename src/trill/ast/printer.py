@@ -82,3 +82,6 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
         expr = stmt.expression
 
         return self.parenthesize(f"textbox {repeats}", expr)
+    
+    def visit_TextAlign_Expression(self, expr: expression.TextAlign):
+        return self.parenthesize('textalign', expr.left, expr.right)

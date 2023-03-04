@@ -1,6 +1,7 @@
 """Troll interpreter."""
 from typing import ChainMap, Dict, Iterable, Sequence, TypeVar, List, Any, Union, cast
 import random
+from trill.string import process_string
 
 from trill.types import Number, NumberList
 from .ast import expression
@@ -59,7 +60,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
     def execute(self, stmt: statement.Statement):
         return stmt.accept(self)
 
-    def visit_Literal_Expression(self, expr: expression.Literal) -> Union[str, int, float, None]:
+    def visit_Literal_Expression(self, expr: expression.Literal) -> Union[str, int, float, List[str], List[List[str]], None]:
+        if isinstance(expr.value, str):
+            return process_string(expr.value)
         return expr.value
 
     def evaluate(self, expr: expression.Expression) -> Union[Number, NumberList]:
@@ -469,3 +472,52 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         expr = stmt.expression
 
         return [str(self.evaluate(expr)) for _ in range(repeats)]
+
+    def visit_TextAlign_Expression(self, expr: expression.TextAlign):
+        operator = expr.operator
+        left = self.evaluate(expr.left)
+        right = self.evaluate(expr.right)
+
+
+        if isinstance(left, str):
+            left = left.split('\n')
+        
+        if isinstance(right, str):
+            right = right.split('\n')
+
+        if not isinstance(left, list):
+            left = [left]
+        if not isinstance(right, list):
+            right  = [right]
+
+        assert isinstance(left, list), f"{left}, {type(left)}"
+        assert isinstance(right, list), f"{right}, {type(right)}"
+
+        max_length_left = len(max(left, key=len)) 
+        max_length_right = len(max(right, key=len))
+        max_length = max(max_length_left, max_length_right )
+
+        if operator.lexeme == '|>':
+            output =  [f'{t:<{max_length}}' for t in left] + [f'{t:<{max_length}}' for t in right]
+            return "\n".join(output)
+
+        if operator.lexeme == '<|':
+            output =  [f'{t:>{max_length}}' for t in left] + [f'{t:>{max_length}}' for t in right]
+            return "\n".join(output)
+
+        if operator.lexeme == '<>':
+            output =  [f'{t:^{max_length}}' for t in left] + [f'{t:^{max_length}}' for t in right]
+            return "\n".join(output)
+
+        if operator.lexeme == '||':
+            max_height = max(len(left), len(right))
+
+            left += [' ' * max_length_left] * (max_height - len(left))
+            right += [' ' * max_length_right] * (max_height - len(right))
+
+            assert len(left) == len(right)
+
+            preliminary = list(zip(left, right))
+
+            return "\n".join(["".join(t) for t in preliminary])
+

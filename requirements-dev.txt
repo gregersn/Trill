@@ -3,3 +3,5 @@ twine
 pytest
 pylint
 pytest-cov
+yapf
+toml

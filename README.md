@@ -22,9 +22,12 @@ result, errors = trill("3d6")
 
 ## Running tests
 
-From the `src` folder:
+`make test`
 
-`python -m pytest ../tests`
+## Running coverage
+
+`make coverage`
+
 
 ## Development
 

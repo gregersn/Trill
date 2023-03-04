@@ -46,3 +46,6 @@ addopts = [
 
 [tool.coverage.run]
 omit=["src/trill/tests/*"]
+
+[tool.ruff]
+line-length = 140

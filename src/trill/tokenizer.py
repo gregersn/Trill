@@ -7,6 +7,7 @@ from .error import handler as error_handler, ScannerError
 from .reserved import KEYWORDS
 
 
+
 class Tokenizer:
     source: str
     tokens: List[Token]
@@ -52,6 +53,17 @@ class Tokenizer:
             self.add_token(TokenType.INTEGER, int(
                 self.source[self._start:self._current], 10))
 
+    def string(self):
+        """Scan string."""
+
+        while self.peek() != '"':
+            self.advance()
+
+        self.advance()
+        string = self.source[self._start + 1:self._current - 1]
+
+        self.add_token(TokenType.STRING, string)
+
     def identifier(self):
         """Identifiers are either custom names or reserved keywords."""
         while self.peek().isalpha():
@@ -69,7 +81,25 @@ class Tokenizer:
             if self.peek() == '=':
                 self.advance()
                 return self.add_token(TokenType.LESS_THAN_OR_EQUAL, '<=')
+
+            if self.peek() == '|':
+                self.advance()
+                return self.add_token(TokenType.TEXTALIGN, '<|')
+
+            if self.peek() == '>':
+                self.advance()
+                return self.add_token(TokenType.TEXTALIGN, '<>')
+
             return self.add_token(TokenType.LESS_THAN, '<')
+
+        if character == '|':
+            if self.peek() == '|':
+                self.advance()
+                return self.add_token(TokenType.TEXTALIGN, '||')
+
+            if self.peek() == '>':
+                self.advance()
+                return self.add_token(TokenType.TEXTALIGN, '|>')
 
         if character == "'":
             return self.add_token(TokenType.TEXTBOX, "'")
@@ -171,6 +201,9 @@ class Tokenizer:
 
         if character in [' ', '\t', '\r']:
             return
+
+        if character == '"':
+            return self.string()
 
         if character == '\n':
             self._line += 1

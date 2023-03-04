@@ -42,6 +42,7 @@ class TokenType(Enum):
     FLOAT = 'float'
     INTEGER = 'integer'
     IDENTIFIER = 'identifier'
+    STRING = 'string'
     SIGN = 'sign'
 
     DICE = 'dice'  # Dice that goes from 1 to N
@@ -80,11 +81,13 @@ class TokenType(Enum):
     CALL = 'call'
 
     TEXTBOX = "'"
+    TEXTALIGN = "textalign"
 
     EOF = 'eof'
 
 
 TokenLiteral = Union[str, int, float, None]
+
 
 class Token:
     token_type: TokenType
@@ -95,7 +98,7 @@ class Token:
 
     def __init__(self, _type: TokenType, lexeme: str, literal: TokenLiteral, line: int, column: int):
         """Create a token.
-        
+
         Keyword arguments:
         _type -- The type of token
         lexeme -- String representation of the token

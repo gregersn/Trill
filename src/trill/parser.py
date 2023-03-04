@@ -29,6 +29,10 @@ class Parser:
         return self.tokens[self.current - 1]
 
     def check(self, _type: TokenType):
+        """Check next token.
+        
+        Return True if next token is of type _type
+        """
         if self.is_at_end():
             return False
         return self.peek().token_type == _type
@@ -40,6 +44,7 @@ class Parser:
         return self.previous()
 
     def match(self, *types: TokenType):
+        """Check and consume a token of given types."""
         for _type in types:
             if self.check(_type):
                 self.advance()
@@ -92,21 +97,31 @@ class Parser:
             return self.print_statement()
 
         expr = self.parse_expression()
+
         if expr is None:
             return None
+
+        if self.check(TokenType.TEXTALIGN):
+            while self.match(TokenType.TEXTALIGN):
+                operator = self.previous()
+                right = self.declaration()
+                assert right is not None
+                expr = expression.TextAlign(expr, operator, right)
+            return expr
+
 
         if self.check(TokenType.SEMICOLON):
             expressions = [expr]
             if self.check(TokenType.SEMICOLON) and not isinstance(expr, expression.Assign):
                 token = self.tokens[self.current]
                 error_handler.report(ParserError(
-                    token.line, token.column, f"Unexpected token: {token.lexeme}"))
+                    token.line, token.column, f"Unexpected semicolon: {token.lexeme}"))
 
             while self.match(TokenType.SEMICOLON):
                 if not isinstance(expr, expression.Assign):
                     token = self.tokens[self.current]
                     error_handler.report(ParserError(
-                        token.line, token.column, f"Unexpected token: {token.lexeme}"))
+                        token.line, token.column, f"Expected assignment, got: {token.lexeme}"))
 
                 expr = self.parse_expression()
 
@@ -138,7 +153,7 @@ class Parser:
             self.error("Missing negative result in if-expression")
             err = True
 
-        if (err):
+        if err:
             return None
 
         return expression.Conditional(condition, true_result, false_result)
@@ -331,6 +346,8 @@ class Parser:
 
     def picker(self) -> Optional[expression.Expression]:
         expr = self.combination()
+
+        # Left grouping operators.
         while self.match(TokenType.DROP, TokenType.KEEP, TokenType.PICK, TokenType.MINUSMINUS):
             operator = self.previous()
             right = self.combination()
@@ -348,6 +365,8 @@ class Parser:
 
     def combination(self) -> Optional[expression.Expression]:
         expr = self.term()
+
+        # Right grouping operators.
         while self.match(TokenType.UNION, TokenType.AND):
             operator = self.previous()
             right = self.term()
@@ -365,6 +384,8 @@ class Parser:
 
     def term(self) -> Optional[expression.Expression]:
         expr = self.factor()
+
+        # Left grouping operators.
         while self.match(TokenType.PLUS, TokenType.MINUS):
             operator = self.previous()
             right = self.factor()
@@ -383,6 +404,7 @@ class Parser:
     def factor(self) -> Optional[expression.Expression]:
         expr = self.unary()
 
+        # Left grouping operators.
         while self.match(TokenType.DIVIDE, TokenType.MULTIPLY, TokenType.MODULO):
             operator = self.previous()
             right = self.unary()
@@ -420,6 +442,7 @@ class Parser:
         return self.qualifier()
 
     def qualifier(self) -> Optional[expression.Expression]:
+        # Prefix operators.
         dual_operators = [
             TokenType.LEAST,
             TokenType.LARGEST,
@@ -428,6 +451,7 @@ class Parser:
         if self.match(*dual_operators):
             return self.selection_expression()
 
+        # Prefix operators.
         operators = [
             TokenType.CHOOSE,
             TokenType.COUNT,
@@ -456,6 +480,7 @@ class Parser:
     def filter(self):
         expr = self.samples()
 
+        # Right grouping operators.
         while self.match(
                 TokenType.EQUAL,
                 TokenType.LESS_THAN,
@@ -529,7 +554,7 @@ class Parser:
         return res
 
     def primary(self):
-        if self.match(TokenType.INTEGER, TokenType.FLOAT):
+        if self.match(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING):
             return expression.Literal(self.previous().literal)
 
         if self.match(TokenType.IDENTIFIER):
@@ -577,16 +602,19 @@ class Parser:
             self.consume(TokenType.RSQUARE, "Missing ']' to close pair.")
 
             err = False
-            if not a:
+            if a is None:
                 self.error("Missing first part of pair")
                 err = True
 
-            if not b:
+            if a is None:
                 self.error("Missing second part of pair")
                 err = True
 
             if err:
                 return None
+            
+            assert a
+            assert b
 
             return expression.Pair(a, b)
 

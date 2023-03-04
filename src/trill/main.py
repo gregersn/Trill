@@ -39,9 +39,7 @@ def run(
     parsed = Parser(tokens).parse()
     result = Interpreter().interpret(parsed, average=average)
     for line in result:
-        if line:
-            print(line)
-
+        print(line)
 
 if __name__ == '__main__':
     main()

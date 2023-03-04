@@ -7,5 +7,6 @@
   "python.envFile": "${workspaceFolder}/.env",
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": true,
-  "python.terminal.activateEnvironment": true
+  "python.terminal.activateEnvironment": true,
+  "python.formatting.provider": "yapf"
 }

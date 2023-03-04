@@ -45,7 +45,7 @@ class Pair(Expression):
 
 @dataclass
 class Literal(Expression):
-    value: Union[int, float, str]
+    value: Union[int, float, str, None]
 
 
 @dataclass

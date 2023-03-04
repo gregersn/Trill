@@ -75,6 +75,7 @@ class Parser:
             repeats = 1
 
         self.consume(TokenType.TEXTBOX, 'Expected a string operator.')
+        assert isinstance(repeats, int)
 
         return statement.Print(self.parse_expression(), repeats)
 

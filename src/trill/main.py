@@ -2,7 +2,7 @@
 from pathlib import Path
 import typer
 from .tokens import TokenType
-from .tokenizer import Token, Scanner
+from .tokenizer import Token, Tokenizer
 from .interpreter import Interpreter
 from .parser import Parser
 from .ast.printer import ASTPrinter
@@ -35,7 +35,7 @@ def run(
         with open(Path(source), 'r', encoding="utf-8") as f:
             source = f.read()
 
-    tokens = Scanner(source).scan_tokens()
+    tokens = Tokenizer(source).scan_tokens()
     parsed = Parser(tokens).parse()
     result = Interpreter().interpret(parsed, average=average)
     for line in result:

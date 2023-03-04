@@ -1,12 +1,12 @@
 """Trill - Troll interpreter."""
-from .tokenizer import Scanner
+from .tokenizer import Tokenizer
 from .parser import Parser
 from .interpreter import Interpreter
 from .error import handler as error_handler
 
 
 def trill(roll: str):
-    tokens = Scanner(roll).scan_tokens()
+    tokens = Tokenizer(roll).scan_tokens()
 
     if error_handler.had_error:
         return [None, error_handler.error_report]

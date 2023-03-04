@@ -1,11 +1,11 @@
 """Test the scanner."""
-from trill.tokenizer import Scanner
+from trill.tokenizer import Tokenizer
 from trill.tokens import TokenType
 from trill.error import handler as error_handler
 
 
 def test_roll_one():
-    scanner = Scanner("d6")
+    scanner = Tokenizer("d6")
     res = scanner.scan_tokens()
 
     assert not error_handler.had_error
@@ -18,7 +18,7 @@ def test_roll_one():
 
 
 def test_roll_multiple():
-    scanner = Scanner("3d6")
+    scanner = Tokenizer("3d6")
     res = scanner.scan_tokens()
 
     assert not error_handler.had_error
@@ -30,7 +30,7 @@ def test_roll_multiple():
 
 
 def test_roll_multiple_calculated():
-    scanner = Scanner("(4+1)d6")
+    scanner = Tokenizer("(4+1)d6")
     res = scanner.scan_tokens()
 
     assert not error_handler.had_error

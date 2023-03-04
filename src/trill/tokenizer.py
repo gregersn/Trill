@@ -7,7 +7,7 @@ from .error import handler as error_handler, ScannerError
 from .reserved import KEYWORDS
 
 
-class Scanner:
+class Tokenizer:
     source: str
     tokens: List[Token]
 

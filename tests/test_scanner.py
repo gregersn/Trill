@@ -1,6 +1,6 @@
 """Test that the scanner handles miscellanous stuff."""
 import pytest
-from trill.tokenizer import Scanner
+from trill.tokenizer import Tokenizer
 from trill.tokens import TokenType, Token
 
 number_tests = [
@@ -11,7 +11,7 @@ number_tests = [
 
 @pytest.mark.parametrize("source,result", number_tests)
 def test_numbers(source: str, result: Token):
-    scanner = Scanner(source)
+    scanner = Tokenizer(source)
     tokens = scanner.scan_tokens()
     assert tokens[0] == result
 
@@ -23,6 +23,6 @@ identifier_tests = [
 
 @pytest.mark.parametrize("source,result", number_tests)
 def test_identifiers(source: str, result: Token):
-    scanner = Scanner(source)
+    scanner = Tokenizer(source)
     tokens = scanner.scan_tokens()
     assert tokens[0] == result

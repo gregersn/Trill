@@ -6,3 +6,4 @@ build/
 dist/
 .prepped
 .requirements
+.package

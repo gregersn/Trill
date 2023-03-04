@@ -21,6 +21,8 @@ testcases: List[TestCase] = [
     TestCase('11/3', 3, ['(/ 11 3)'], [11 // 3]),
     TestCase('3*d6', 4, ['(* 3 (d 6))'], [3 * 3.5]),
     TestCase('-d7', 3, ['(- (d 7))'], [-4]),
+    TestCase('sum 5', 2, ['(sum 5)'], [5]),
+    TestCase('sum d6', 3, ['(sum (d 6))'], [3.5]),
     TestCase('sum 5d6', 4, ['(sum (d 5 6))'], [5 * 3.5]),
     TestCase('sgn (d7-3)', 7, ['(sgn (group (- (d 7) 3)))'], [1]),
     TestCase('sum 3d6+4', 6, ['(+ (sum (d 3 6)) 4)'], [3 * 3.5 + 4]),

@@ -92,7 +92,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             return random.randint(start, right)
 
         if token_type == TokenType.SUM:
-            assert isinstance(right, list)
+            if isinstance(right, (int, float)):
+                right = [right]
             return sum(right)
 
         if token_type == TokenType.SIGN:

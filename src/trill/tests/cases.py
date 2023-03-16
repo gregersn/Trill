@@ -174,5 +174,6 @@ call down(10)""", 30, ['(function down (n) (block (assign x (d n)); (if (= x 1) 
         10,
         ["(textalign Str |>Dex|>Con|>Int|>Wis|>Chr (textbox 6 (sum (largest 3 (d 4 6)))))"],
         ['Str 10.5\nDex 10.5\nCon 10.5\nInt 10.5\nWis 10.5\nChr 10.5'],
-    )
+    ),
+    TestCase('"Foo "|| 3d6', 5, ["(textalign Foo  (d 3 6))"], ['Foo 3.5\n    3.5\n    3.5'])
 ]

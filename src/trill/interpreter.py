@@ -493,8 +493,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         assert isinstance(left, list), f"{left}, {type(left)}"
         assert isinstance(right, list), f"{right}, {type(right)}"
 
-        max_length_left = len(max(left, key=len)) 
-        max_length_right = len(max(right, key=len))
+        max_length_left = len(str(max(left, key=lambda x: len(str(x)))))
+        max_length_right = len(str(max(right, key=lambda x: len(str(x)))))
         max_length = max(max_length_left, max_length_right )
 
         if operator.lexeme == '|>':
@@ -519,5 +519,5 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
             preliminary = list(zip(left, right))
 
-            return "\n".join(["".join(t) for t in preliminary])
+            return "\n".join(["".join([str(v) for v in t]) for t in preliminary])
 

@@ -30,7 +30,6 @@ class Parser:
 
     def check(self, _type: TokenType):
         """Check next token.
-        
         Return True if next token is of type _type
         """
         if self.is_at_end():
@@ -108,7 +107,6 @@ class Parser:
                 assert right is not None
                 expr = expression.TextAlign(expr, operator, right)
             return expr
-
 
         if self.check(TokenType.SEMICOLON):
             expressions = [expr]
@@ -577,7 +575,7 @@ class Parser:
 
                 if not expr:
                     self.error("Invalid expression.")
-                    continue
+                    return None
 
                 statements.append(expr)
 
@@ -612,7 +610,7 @@ class Parser:
 
             if err:
                 return None
-            
+
             assert a
             assert b
 

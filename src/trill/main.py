@@ -7,6 +7,7 @@ from .interpreter import Interpreter
 from .parser import Parser
 from .ast.printer import ASTPrinter
 from .ast.expression import Binary, Grouping, Literal, Unary
+from .error import handler as error_handler
 
 app = typer.Typer(add_completion=False)
 
@@ -38,6 +39,12 @@ def run(
     tokens = Tokenizer(source).scan_tokens()
     parsed = Parser(tokens).parse()
     result = Interpreter().interpret(parsed, average=average)
+
+    if error_handler.had_error:
+        for error in error_handler.error_report:
+            print(error)
+        return
+
     for line in result:
         print(line)
 

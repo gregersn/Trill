@@ -59,6 +59,7 @@ testcases: Sequence[TestCase] = [
              '(maximal (collection 1 1 2 3 3))'], [[3, 3]]),
     TestCase('largest 3 {4, 5, 2, 4, 7, 2}', 15, None, [[4, 5, 7]]),
     TestCase('largest 3 4d6', 5, ["(largest 3 (d 4 6))"], [[3.5, 3.5, 3.5]]),
+    TestCase('largest 1 {1, 2} + 1', 9, ["(+ (largest 1 (collection 1 2)) 1)"], [3]),
     TestCase('least 3 {4, 5, 2, 4, 7, 2}', 15, None, [[2, 2, 4]]),
     TestCase('2 <= {1, 2, 3}', 9, ['(<= 2 (collection 1 2 3))'], [[2, 3]]),
     TestCase('2 < {1, 2, 3}', 9, ['(< 2 (collection 1 2 3))'], [[3]]),
@@ -210,5 +211,6 @@ call down(10)""", 30, ['(function down (n) (block (assign x (d n)); (if (= x 1) 
     ),
     TestCase('"Foo "|| 3d6', 5, ["(textalign Foo  (d 3 6))"], ['Foo 3.5\n    3.5\n    3.5']),
     TestCase('largest(1,3d20)', 8, None, None,
-             "Parser-error at line 1, column 9: Expected a semi colon")
+             "Parser-error at line 1, column 9: Expected a semi colon"),
+    TestCase('largest 1 2d20 + 7 + d4', 10, ["(+ (+ (largest 1 (d 2 20)) 7) (d 4))"], [10.5 + 7 + 2.5])
 ]

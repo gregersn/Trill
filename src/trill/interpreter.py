@@ -324,6 +324,14 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
             if token_type == TokenType.NOT_EQUAL:
                 return [v for v in right if left != v]
+        
+        if isinstance(left, list):
+            assert len(left) == 1
+            left = left[0]
+
+        if isinstance(right, list):
+            assert len(right) == 1
+            right = right[0]
 
         assert isinstance(left, (int, float))
         assert isinstance(right, (int, float))

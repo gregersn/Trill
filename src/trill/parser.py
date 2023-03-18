@@ -263,9 +263,10 @@ class Parser:
         return self.assignment()
 
     def selection_expression(self):
+        """Handle LEAST and LARGEST."""
         selector = self.previous()
         count = self.parse_expression()
-        selection = self.parse_expression()
+        selection = self.diceroll()
 
         if error_handler.had_error:
             return None

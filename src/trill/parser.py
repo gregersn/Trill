@@ -57,8 +57,7 @@ class Parser:
     def consume(self, _type: TokenType, message: str):
         if self.check(_type):
             return self.advance()
-        token = self.tokens[self.current]
-        error_handler.report(ParserError(token.line, token.column, message))
+        self.error(message)
 
     def parse(self):
         # roll ->  (function* | expression)
@@ -112,14 +111,12 @@ class Parser:
             expressions = [expr]
             if self.check(TokenType.SEMICOLON) and not isinstance(expr, expression.Assign):
                 token = self.tokens[self.current]
-                error_handler.report(ParserError(
-                    token.line, token.column, f"Unexpected semicolon: {token.lexeme}"))
+                self.error(f"Unexpected semicolon: {token.lexeme}")
 
             while self.match(TokenType.SEMICOLON):
                 if not isinstance(expr, expression.Assign):
                     token = self.tokens[self.current]
-                    error_handler.report(ParserError(
-                        token.line, token.column, f"Expected assignment, got: {token.lexeme}"))
+                    self.error(f"Expected assignment, got: {token.lexeme}")
 
                 expr = self.parse_expression()
 
@@ -187,16 +184,14 @@ class Parser:
         action = self.assignment()
         if not self.match(TokenType.WHILE, TokenType.UNTIL):
             token = self.tokens[self.current]
-            error_handler.report(ParserError(
-                token.line, token.column, f"Expected WHILE or UNTIL, got {token.token_type}"))
+            self.error(f"Expected WHILE or UNTIL, got {token.token_type}")
             return None
         condition = self.previous()
         qualifier = self.parse_expression()
 
         if qualifier is None:
             token = self.tokens[self.current]
-            error_handler.report(ParserError(
-                token.line, token.column, "Missing qualifier in repeat-expression"))
+            self.error("Missing qualifier in repeat-expression")
             return None
 
         if not isinstance(action, expression.Assign):
@@ -269,10 +264,11 @@ class Parser:
 
     def selection_expression(self):
         selector = self.previous()
-
         count = self.parse_expression()
-
         selection = self.parse_expression()
+
+        if error_handler.had_error:
+            return None
 
         if not count:
             self.error("Missing count in selection expression")
@@ -305,9 +301,6 @@ class Parser:
     def assignment(self) -> Optional[expression.Expression]:
         expr = self.comparison()
         if expr is None:
-            token = self.tokens[self.current]
-            error_handler.report(ParserError(
-                token.line, token.column, "Parse error, unexpeced {token}"))
             return None
 
         if self.match(TokenType.ASSIGN):
@@ -569,6 +562,9 @@ class Parser:
                 return expression.Grouping(expr)
 
             self.consume(TokenType.SEMICOLON, "Expected a semi colon")
+            if error_handler.had_error:
+                return None
+
             statements: List[expression.Expression] = [expr]
             while not self.match(TokenType.RPAREN):
                 expr = self.parse_expression()
@@ -617,5 +613,4 @@ class Parser:
             return expression.Pair(a, b)
 
         token = self.tokens[self.current]
-        error_handler.report(ParserError(
-            token.line, token.column, f"Unexpected token: '{token.lexeme}'"))
+        self.error(f"Unexpected token: '{token.lexeme}'")

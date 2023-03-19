@@ -233,6 +233,7 @@ class Parser:
                 err = True
             else:
                 parameters.append(token)
+            self.match(TokenType.COMMA)
 
         self.consume(TokenType.EQUAL, "Expect '=' before function body.")
         expr = self.declaration()
@@ -292,6 +293,7 @@ class Parser:
             if expr is None:
                 break
             parameters.append(expr)
+            self.match(TokenType.COMMA)
 
         if not name:
             self.error("Missing function name")

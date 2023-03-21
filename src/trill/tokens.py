@@ -77,6 +77,7 @@ class TokenType(Enum):
     UNTIL = 'until'
     ACCUMULATE = 'accumulate'
 
+    COMPOSITIONAL = 'compositional'
     FUNCTION = 'function'
     CALL = 'call'
 

@@ -88,6 +88,10 @@ class Parser:
 
     def declaration(self) -> Optional[Union[statement.Statement, expression.Expression]]:
         # statement -> exprStatement | printStatement;
+
+        if self.match(TokenType.COMPOSITIONAL):
+            return self.compositional_declaration()
+
         if self.match(TokenType.FUNCTION):
             return self.function_declaration()
 
@@ -250,6 +254,22 @@ class Parser:
             return None
 
         return statement.Function(identifier, parameters, expr)
+
+    def compositional_declaration(self) -> Optional[statement.Compositional]:
+        identifier = self.consume(
+            TokenType.IDENTIFIER, "Expected compositional identifier.")
+
+        self.consume(TokenType.LPAREN, "Expect '(' after compositional name.")
+        empty = self.primary()
+        self.consume(TokenType.COMMA, "Expected comma")
+        singleton = self.tokens[self.current]
+        self.consume(singleton.token_type, "Found one")
+        self.consume(TokenType.COMMA, "Expected comma")
+        union = self.tokens[self.current]
+        self.consume(union.token_type, "Expected identifier")
+        self.consume(TokenType.RPAREN, "Expect ')' after last compositional parameter.")
+
+        return statement.Compositional(identifier, empty, singleton, union)
 
     def parse_expression(self) -> Optional[expression.Expression]:
         if self.match(TokenType.IF):

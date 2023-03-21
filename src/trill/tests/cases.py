@@ -182,5 +182,14 @@ call down(10)""", 30, ['(function down (n) (block (assign x (d n)); (if (= x 1) 
     TestCase('largest 1 2d20 + 7 + d4', 10, ["(+ (+ (largest 1 (d 2 20)) 7) (d 4))"], [10.5 + 7 + 2.5]),
     TestCase("""function add(a, b) =
         a + b
-        call add(1, 2)""", 18, ["(function add (a,b) (+ a b))", "(call add 1 2)"], [None, 3])
+        call add(1, 2)""", 18, ["(function add (a,b) (+ a b))", "(call add 1 2)"], [None, 3]),
+    TestCase("""compositional product(1,id,times)
+        function id(x) = x
+        function times(x,y) = x*y
+        call product({1, 2, 4})""", 38, ["(compositional product 1 id times)", "(function id (x) x)", "(function times (x,y) (* x y))", "(call product (collection 1 2 4))"],
+             [None, None, None, 8]),
+    TestCase("""compositional product(1,sum,*)
+                call product({})
+                call product(3)
+                call product({1, 2, 4})""", 31, ["(compositional product 1 sum *)", "(call product (collection ))", "(call product 3)", "(call product (collection 1 2 4))"], [None, 1, 3, 8])
 ]

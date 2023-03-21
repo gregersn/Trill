@@ -6,7 +6,7 @@ from trill.string import process_string
 from trill.types import Number, NumberList
 from .ast import expression
 from .ast import statement
-from .tokens import TokenType
+from .tokens import Token, TokenType
 
 T = TypeVar('T')
 
@@ -24,7 +24,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
     # variables: Dict[str, Union[int, str]] = {}
     variables: ChainMap[str, Union[Number, NumberList, str]] = ChainMap({})
-    functions: Dict[str, statement.Function] = {}
+    functions: Dict[str, Union[statement.Function, statement.Compositional]] = {}
 
     def __repr__(self):
         return "<Interpreter >"
@@ -324,7 +324,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
             if token_type == TokenType.NOT_EQUAL:
                 return [v for v in right if left != v]
-        
+
         if isinstance(left, list):
             assert len(left) == 1
             left = left[0]
@@ -455,9 +455,44 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         assert isinstance(stmt.name.literal, str)
         self.functions[stmt.name.literal] = stmt
 
+    def visit_Compositional_Statement(self, stmt: statement.Compositional):
+        assert isinstance(stmt.name.literal, str)
+        self.functions[stmt.name.literal] = stmt
+
     def visit_Call_Expression(self, expr: expression.Call):
         assert expr.name.literal in self.functions
         stmt = self.functions[expr.name.literal]
+
+        if isinstance(stmt, statement.Compositional):
+            return self.call_compositional(expr, stmt)
+
+        return self.call_function(expr, stmt)
+
+    def call_compositional(self, expr: expression.Call, stmt: statement.Compositional):
+        self.push()
+
+        res = stmt.empty.value
+
+        parameter = expr.parameters[0]
+
+        if isinstance(parameter, expression.List):
+            operator = stmt.union
+            for next_val in parameter.value:
+                if isinstance(operator, Token) and operator.token_type == TokenType.IDENTIFIER:
+                    res = self.visit_Call_Expression(expression.Call(name=operator, parameters=[expression.Literal(res), next_val]))
+                else:
+                    res = self.visit_Binary_Expression(expression.Binary(expression.Literal(res), operator=operator, right=next_val))
+        else:
+            operator = stmt.singleton
+            if isinstance(operator, Token) and operator.token_type == TokenType.IDENTIFIER:
+                res = self.visit_Call_Expression(expression.Call(name=operator, parameters=[expression.Literal(res)]))
+            else:
+                res = self.visit_Unary_Expression(expression.Unary(operator=operator, right=parameter))
+
+        self.pop()
+        return res
+
+    def call_function(self, expr: expression.Call, stmt: statement.Function):
         self.push()
         for name, value in zip(stmt.parameters, expr.parameters):
             assert isinstance(name.literal, str)
@@ -486,35 +521,34 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
 
-
         if isinstance(left, str):
             left = left.split('\n')
-        
+
         if isinstance(right, str):
             right = right.split('\n')
 
         if not isinstance(left, list):
             left = [left]
         if not isinstance(right, list):
-            right  = [right]
+            right = [right]
 
         assert isinstance(left, list), f"{left}, {type(left)}"
         assert isinstance(right, list), f"{right}, {type(right)}"
 
         max_length_left = len(str(max(left, key=lambda x: len(str(x)))))
         max_length_right = len(str(max(right, key=lambda x: len(str(x)))))
-        max_length = max(max_length_left, max_length_right )
+        max_length = max(max_length_left, max_length_right)
 
         if operator.lexeme == '|>':
-            output =  [f'{t:<{max_length}}' for t in left] + [f'{t:<{max_length}}' for t in right]
+            output = [f'{t:<{max_length}}' for t in left] + [f'{t:<{max_length}}' for t in right]
             return "\n".join(output)
 
         if operator.lexeme == '<|':
-            output =  [f'{t:>{max_length}}' for t in left] + [f'{t:>{max_length}}' for t in right]
+            output = [f'{t:>{max_length}}' for t in left] + [f'{t:>{max_length}}' for t in right]
             return "\n".join(output)
 
         if operator.lexeme == '<>':
-            output =  [f'{t:^{max_length}}' for t in left] + [f'{t:^{max_length}}' for t in right]
+            output = [f'{t:^{max_length}}' for t in left] + [f'{t:^{max_length}}' for t in right]
             return "\n".join(output)
 
         if operator.lexeme == '||':
@@ -528,4 +562,3 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             preliminary = list(zip(left, right))
 
             return "\n".join(["".join([str(v) for v in t]) for t in preliminary])
-

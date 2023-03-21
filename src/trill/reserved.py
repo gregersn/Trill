@@ -29,5 +29,6 @@ KEYWORDS = {
     'while': TokenType.WHILE,
     'accumulate': TokenType.ACCUMULATE,
     'function': TokenType.FUNCTION,
+    'compositional': TokenType.COMPOSITIONAL,
     'call': TokenType.CALL,
 }

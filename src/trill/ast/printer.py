@@ -77,11 +77,19 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
 
         return self.parenthesize(f"function {name.literal} ({','.join(p.literal for p in parameters)})", expr)
 
+    def visit_Compositional_Statement(self, stmt: statement.Compositional):
+        name = stmt.name
+        empty = stmt.empty
+        singleton = stmt.singleton
+        union = stmt.union
+
+        return self.parenthesize(f"compositional {name.literal} {empty.value} {singleton.literal} {union.literal}")
+
     def visit_Print_Statement(self, stmt: statement.Print):
         repeats = stmt.repeats
         expr = stmt.expression
 
         return self.parenthesize(f"textbox {repeats}", expr)
-    
+
     def visit_TextAlign_Expression(self, expr: expression.TextAlign):
         return self.parenthesize('textalign', expr.left, expr.right)

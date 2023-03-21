@@ -74,7 +74,7 @@ See the list below for what is, and what is not (supposed) to work yet.
 - [x] _repeat x := e1 while/until e2_
 - [x] _accumulate x := e1 while/until e2_
 - [x] _function_
-- [ ] _compositional_
+- [x] _compositional_
 - [x] _call_
 - [x] text box of single sample ( ' )
 - [x] text box of n samples ( n ' )

@@ -1,5 +1,6 @@
 """Run Trill dice roller."""
 from pathlib import Path
+from typing import Optional
 import typer
 from .tokens import TokenType
 from .tokenizer import Token, Tokenizer
@@ -27,6 +28,7 @@ def main():
 def run(
         source: str = typer.Argument(..., help="Source of dice rolls."),
         average: bool = typer.Option(False, help="Use average dice values."),
+        seed: Optional[int] = typer.Option(None, help="Set random seed.")
 ):
     """
     Use SOURCE to roll dice according to the Troll language.
@@ -38,7 +40,7 @@ def run(
 
     tokens = Tokenizer(source).scan_tokens()
     parsed = Parser(tokens).parse()
-    result = Interpreter().interpret(parsed, average=average)
+    result = Interpreter(seed).interpret(parsed, average=average)
 
     if error_handler.had_error:
         for error in error_handler.error_report:

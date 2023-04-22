@@ -1,10 +1,17 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-requirements-txt", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
 
 [project]
 name = "trill"
-version = "0.0.6"
+dynamic = ["version"]
+
 description = "Troll language parser and interpreter."
 readme = "README.md"
 authors = [

@@ -7,3 +7,4 @@ dist/
 .prepped
 .requirements
 .package
+_version.py

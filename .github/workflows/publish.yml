@@ -1,0 +1,23 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - 'v[0-9].[0-9]+.[0-9]+'
+      - 'v[0-9].[0-9]+.[0-9]+.dev[0-9]+'
+
+permissions:
+  contents: read
+
+jobs:
+  publish_github:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          generate_release_notes: true

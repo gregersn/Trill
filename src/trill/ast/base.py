@@ -1,8 +1,11 @@
 """Base AST classes and types."""
+import sys
 from dataclasses import dataclass
-from typing import Any, TypeVar, Generic
+import random
+from typing import Any, Optional, TypeVar, Generic
 
 T = TypeVar('T')
+
 
 class UnknownNodeType(Exception):
     """Unknown node type."""
@@ -10,6 +13,11 @@ class UnknownNodeType(Exception):
 
 class Visitor(Generic[T]):
     """Visitor base class."""
+
+    def __init__(self, seed: Optional[int] = None):
+        if seed is None:
+            seed = random.randrange(sys.maxsize)
+        random.seed(seed)
 
     def visit_generic(self, node: 'Node'):
         """Visit a generic node."""

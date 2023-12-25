@@ -6,8 +6,7 @@ from .interpreter import Interpreter
 from .error import handler as error_handler
 
 
-def trill(roll: str, seed: Optional[int] = None,
-          average: bool = False):
+def trill(roll: str, seed: Optional[int] = None, average: bool = False):
     tokens = Tokenizer(roll).scan_tokens()
 
     if error_handler.had_error:

@@ -1,5 +1,6 @@
-import pytest
+"""Test parser."""
 from typing import List
+import pytest
 
 from trill.ast.printer import ASTPrinter
 
@@ -9,7 +10,10 @@ from trill.parser import Parser
 from trill import error_handler
 
 
-@pytest.mark.parametrize("roll,result", [(case.roll, case.parse_result) for case in testcases if case.parse_result])
+@pytest.mark.parametrize(
+    "roll,result",
+    [(case.roll, case.parse_result) for case in testcases if case.parse_result],
+)
 def test_parse(roll: str, result: List[str]):
     scanner = Tokenizer(roll)
     tokens = scanner.scan_tokens()

@@ -7,7 +7,6 @@ from . import statement
 
 
 class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[str]):
-
     def print(self, exprs: List[Node]):
         output: List[str] = []
         for expr in exprs:
@@ -35,7 +34,7 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
         return self.parenthesize(expr.operator.lexeme, expr.right)
 
     def visit_Grouping_Expression(self, expr: expression.Grouping) -> str:
-        return self.parenthesize('group', expr.expression)
+        return self.parenthesize("group", expr.expression)
 
     def visit_Block_Expression(self, expr: expression.Block) -> str:
         return f'(block {"; ".join(self.print(expr.statements))})'
@@ -44,28 +43,28 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
         return str(expr.value)
 
     def visit_Assign_Expression(self, expr: expression.Assign) -> str:
-        return self.parenthesize(f'assign {expr.name.literal}', expr.value)
+        return self.parenthesize(f"assign {expr.name.literal}", expr.value)
 
     def visit_Variable_Expression(self, expr: expression.Variable) -> str:
         return expr.name.lexeme
 
     def visit_Pair_Expression(self, expr: expression.Pair) -> str:
-        return self.parenthesize('pair', expr.first, expr.second)
+        return self.parenthesize("pair", expr.first, expr.second)
 
     def visit_List_Expression(self, expr: expression.List) -> str:
         return f'(collection {" ".join([self.evaluate(v) for v in expr.value])})'
 
     def visit_Conditional_Expression(self, stmt: expression.Conditional) -> str:
-        return self.parenthesize('if', stmt.condition, stmt.truth, stmt.falsy)
+        return self.parenthesize("if", stmt.condition, stmt.truth, stmt.falsy)
 
     def visit_Foreach_Expression(self, expr: expression.Foreach):
-        return self.parenthesize('foreach', expr.iterator, expr.source, expr.block)
+        return self.parenthesize("foreach", expr.iterator, expr.source, expr.block)
 
     def visit_Repeat_Expression(self, stmt: expression.Repeat):
-        return self.parenthesize(f'repeat {stmt.condition.literal}', stmt.action, stmt.qualifier)
+        return self.parenthesize(f"repeat {stmt.condition.literal}", stmt.action, stmt.qualifier)
 
     def visit_Accumulate_Expression(self, stmt: expression.Accumulate):
-        return self.parenthesize('accumulate', stmt.action, stmt.qualifier)
+        return self.parenthesize("accumulate", stmt.action, stmt.qualifier)
 
     def visit_Call_Expression(self, expr: expression.Call):
         return self.parenthesize(f"call {expr.name.literal}", *expr.parameters)
@@ -92,4 +91,4 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
         return self.parenthesize(f"textbox {repeats}", expr)
 
     def visit_TextAlign_Expression(self, expr: expression.TextAlign):
-        return self.parenthesize('textalign', expr.left, expr.right)
+        return self.parenthesize("textalign", expr.left, expr.right)

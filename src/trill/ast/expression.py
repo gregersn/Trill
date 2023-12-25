@@ -21,11 +21,12 @@ class Binary(Expression):
     operator: Token
     right: Expression
 
+
 @dataclass
 class TextAlign(Expression):
     left: Expression
     operator: Token
-    right:Expression
+    right: Expression
 
 
 @dataclass
@@ -94,7 +95,7 @@ class Accumulate(Expression):
 @dataclass
 class Call(Expression):
     name: Token
-    parameters: TList['Expression']
+    parameters: TList["Expression"]
 
 
 @dataclass

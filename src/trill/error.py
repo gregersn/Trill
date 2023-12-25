@@ -17,7 +17,6 @@ class ScannerError(Error):
 
 @dataclass
 class ParserError(Error):
-
     def __str__(self):
         if self.message is None:
             return f"Parser-error at line {self.line}, column {self.column}"

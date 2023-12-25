@@ -8,7 +8,7 @@ from .ast import expression
 from .ast import statement
 from .tokens import Token, TokenType
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class UnknownOperator(Exception):
@@ -35,9 +35,11 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
     def pop(self):
         self.variables = self.variables.parents
 
-    def interpret(self,
-                  statements: List[Union[expression.Expression, statement.Statement]],
-                  average: bool = False) -> List[Union[Number, NumberList, str]]:
+    def interpret(
+        self,
+        statements: List[Union[expression.Expression, statement.Statement]],
+        average: bool = False,
+    ) -> List[Union[Number, NumberList, str]]:
         self.average = average
         self.variables = ChainMap({})
         output: List[Any] = []
@@ -89,7 +91,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             return -right
 
         if token_type == TokenType.DICE:
-            start = 0 if expr.operator.lexeme == 'z' else 1
+            start = 0 if expr.operator.lexeme == "z" else 1
             assert isinstance(right, int)
             if self.average:
                 return (right + start) / 2
@@ -161,11 +163,10 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
             if val < right:
                 return 1
-            else:
-                return cast(List[Any], [])
 
-        raise UnknownOperator(
-            f"Unknown operator {token_type} in unary expression")
+            return cast(List[Any], [])
+
+        raise UnknownOperator(f"Unknown operator {token_type} in unary expression")
 
     def visit_Binary_Expression(self, expr: expression.Binary):
         token_type = expr.operator.token_type
@@ -226,7 +227,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             raise UnknownType("Whatt now")
 
         if token_type == TokenType.DICE:
-            start = 0 if expr.operator.lexeme == 'z' else 1
+            start = 0 if expr.operator.lexeme == "z" else 1
             assert isinstance(right, (int))
             assert isinstance(left, (float, int))
             if self.average:
@@ -257,7 +258,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             if self.average:
                 offset = samples // 2
                 mid_point = len(left) // 2
-                return left[mid_point - offset:mid_point + offset + 1]
+                return left[mid_point - offset : mid_point + offset + 1]
 
             return random.sample(left, samples)
 
@@ -295,12 +296,12 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             return left and right
 
         if token_type in [
-                TokenType.LESS_THAN,
-                TokenType.LESS_THAN_OR_EQUAL,
-                TokenType.GREATER_THAN,
-                TokenType.GREATER_THAN_OR_EQUAL,
-                TokenType.EQUAL,
-                TokenType.NOT_EQUAL,
+            TokenType.LESS_THAN,
+            TokenType.LESS_THAN_OR_EQUAL,
+            TokenType.GREATER_THAN,
+            TokenType.GREATER_THAN_OR_EQUAL,
+            TokenType.EQUAL,
+            TokenType.NOT_EQUAL,
         ]:
             if isinstance(right, (int, float)):
                 right = [right]
@@ -348,8 +349,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         if token_type == TokenType.MULTIPLY:
             return left * right
 
-        raise UnknownOperator(
-            f"Unknown operator {expr.operator.token_type} in binary expression")
+        raise UnknownOperator(f"Unknown operator {expr.operator.token_type} in binary expression")
 
     def visit_Grouping_Expression(self, expr: expression.Grouping):
         return self.evaluate(expr.expression)
@@ -479,7 +479,12 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             operator = stmt.union
             for next_val in parameter.value:
                 if isinstance(operator, Token) and operator.token_type == TokenType.IDENTIFIER:
-                    res = self.visit_Call_Expression(expression.Call(name=operator, parameters=[expression.Literal(res), next_val]))
+                    res = self.visit_Call_Expression(
+                        expression.Call(
+                            name=operator,
+                            parameters=[expression.Literal(res), next_val],
+                        )
+                    )
                 else:
                     res = self.visit_Binary_Expression(expression.Binary(expression.Literal(res), operator=operator, right=next_val))
         else:
@@ -498,8 +503,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             assert isinstance(name.literal, str)
             self.variables[name.literal] = self.evaluate(value)
 
-        assert isinstance(
-            stmt.expression, (statement.Expression, statement.Statement))
+        assert isinstance(stmt.expression, (statement.Expression, statement.Statement))
 
         if isinstance(stmt.expression, statement.Expression):
             res = self.evaluate(stmt.expression)
@@ -522,10 +526,10 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         right = self.evaluate(expr.right)
 
         if isinstance(left, str):
-            left = left.split('\n')
+            left = left.split("\n")
 
         if isinstance(right, str):
-            right = right.split('\n')
+            right = right.split("\n")
 
         if not isinstance(left, list):
             left = [left]
@@ -539,23 +543,23 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         max_length_right = len(str(max(right, key=lambda x: len(str(x)))))
         max_length = max(max_length_left, max_length_right)
 
-        if operator.lexeme == '|>':
-            output = [f'{t:<{max_length}}' for t in left] + [f'{t:<{max_length}}' for t in right]
+        if operator.lexeme == "|>":
+            output = [f"{t:<{max_length}}" for t in left] + [f"{t:<{max_length}}" for t in right]
             return "\n".join(output)
 
-        if operator.lexeme == '<|':
-            output = [f'{t:>{max_length}}' for t in left] + [f'{t:>{max_length}}' for t in right]
+        if operator.lexeme == "<|":
+            output = [f"{t:>{max_length}}" for t in left] + [f"{t:>{max_length}}" for t in right]
             return "\n".join(output)
 
-        if operator.lexeme == '<>':
-            output = [f'{t:^{max_length}}' for t in left] + [f'{t:^{max_length}}' for t in right]
+        if operator.lexeme == "<>":
+            output = [f"{t:^{max_length}}" for t in left] + [f"{t:^{max_length}}" for t in right]
             return "\n".join(output)
 
-        if operator.lexeme == '||':
+        if operator.lexeme == "||":
             max_height = max(len(left), len(right))
 
-            left += [' ' * max_length_left] * (max_height - len(left))
-            right += [' ' * max_length_right] * (max_height - len(right))
+            left += [" " * max_length_left] * (max_height - len(left))
+            right += [" " * max_length_right] * (max_height - len(right))
 
             assert len(left) == len(right)
 

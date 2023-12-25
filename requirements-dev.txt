@@ -3,6 +3,7 @@ twine
 pytest
 pylint
 pytest-cov
-yapf
 toml
 hatch
+ruff
+black

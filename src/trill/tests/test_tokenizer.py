@@ -54,8 +54,8 @@ def test_roll_multiple_calculated():
 
 
 number_tests = [
-    ('4', Token(TokenType.INTEGER, '4', 4, 0, 1)),
-    ('3.141', Token(TokenType.FLOAT, '3.141', 3.141, 0, 1)),
+    ("4", Token(TokenType.INTEGER, "4", 4, 0, 1)),
+    ("3.141", Token(TokenType.FLOAT, "3.141", 3.141, 0, 1)),
 ]
 
 
@@ -67,7 +67,7 @@ def test_numbers(source: str, result: Token):
 
 
 identifier_tests = [
-    ('foo', Token(TokenType.IDENTIFIER, 'foo', 'foo', 0, 1)),
+    ("foo", Token(TokenType.IDENTIFIER, "foo", "foo", 0, 1)),
 ]
 
 
@@ -78,7 +78,10 @@ def test_identifiers(source: str, result: Token):
     assert tokens[0] == result
 
 
-@pytest.mark.parametrize("roll,result", [(case.roll, case.token_count) for case in testcases if case.token_count])
+@pytest.mark.parametrize(
+    "roll,result",
+    [(case.roll, case.token_count) for case in testcases if case.token_count],
+)
 def test_tokenizer(roll: str, result: int):
     scanner = Tokenizer(roll)
     res = scanner.scan_tokens()

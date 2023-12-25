@@ -7,7 +7,6 @@ from .error import handler as error_handler, ScannerError
 from .reserved import KEYWORDS
 
 
-
 class Tokenizer:
     source: str
     tokens: List[Token]
@@ -27,8 +26,7 @@ class Tokenizer:
             self._start = self._current
             self.scan_token()
 
-        self.tokens.append(
-            Token(TokenType.EOF, "\\0", None, self._line, self._current))
+        self.tokens.append(Token(TokenType.EOF, "\\0", None, self._line, self._current))
         return self.tokens
 
     def number(self):
@@ -39,7 +37,7 @@ class Tokenizer:
         while self.peek().isdigit():
             self.advance()
 
-        if self.peek() == '.' and self.peek_next().isdigit():
+        if self.peek() == "." and self.peek_next().isdigit():
             is_float = True
             self.advance()
 
@@ -47,11 +45,9 @@ class Tokenizer:
                 self.advance()
 
         if is_float:
-            self.add_token(TokenType.FLOAT, float(
-                self.source[self._start:self._current]))
+            self.add_token(TokenType.FLOAT, float(self.source[self._start : self._current]))
         else:
-            self.add_token(TokenType.INTEGER, int(
-                self.source[self._start:self._current], 10))
+            self.add_token(TokenType.INTEGER, int(self.source[self._start : self._current], 10))
 
     def string(self):
         """Scan string."""
@@ -60,7 +56,7 @@ class Tokenizer:
             self.advance()
 
         self.advance()
-        string = self.source[self._start + 1:self._current - 1]
+        string = self.source[self._start + 1 : self._current - 1]
 
         self.add_token(TokenType.STRING, string)
 
@@ -69,7 +65,7 @@ class Tokenizer:
         while self.peek().isalpha():
             self.advance()
 
-        text = self.source[self._start:self._current]
+        text = self.source[self._start : self._current]
         _type = KEYWORDS.get(text, TokenType.IDENTIFIER)
         self.add_token(_type, text)
 
@@ -77,135 +73,135 @@ class Tokenizer:
         """Scan for the next token."""
 
         character = self.advance()
-        if character == '<':
-            if self.peek() == '=':
+        if character == "<":
+            if self.peek() == "=":
                 self.advance()
-                return self.add_token(TokenType.LESS_THAN_OR_EQUAL, '<=')
+                return self.add_token(TokenType.LESS_THAN_OR_EQUAL, "<=")
 
-            if self.peek() == '|':
+            if self.peek() == "|":
                 self.advance()
-                return self.add_token(TokenType.TEXTALIGN, '<|')
+                return self.add_token(TokenType.TEXTALIGN, "<|")
 
-            if self.peek() == '>':
+            if self.peek() == ">":
                 self.advance()
-                return self.add_token(TokenType.TEXTALIGN, '<>')
+                return self.add_token(TokenType.TEXTALIGN, "<>")
 
-            return self.add_token(TokenType.LESS_THAN, '<')
+            return self.add_token(TokenType.LESS_THAN, "<")
 
-        if character == '|':
-            if self.peek() == '|':
+        if character == "|":
+            if self.peek() == "|":
                 self.advance()
-                return self.add_token(TokenType.TEXTALIGN, '||')
+                return self.add_token(TokenType.TEXTALIGN, "||")
 
-            if self.peek() == '>':
+            if self.peek() == ">":
                 self.advance()
-                return self.add_token(TokenType.TEXTALIGN, '|>')
+                return self.add_token(TokenType.TEXTALIGN, "|>")
 
         if character == "'":
             return self.add_token(TokenType.TEXTBOX, "'")
 
-        if character == '>':
-            if self.peek() == '=':
+        if character == ">":
+            if self.peek() == "=":
                 self.advance()
-                return self.add_token(TokenType.GREATER_THAN_OR_EQUAL, '>=')
-            return self.add_token(TokenType.GREATER_THAN, '>')
+                return self.add_token(TokenType.GREATER_THAN_OR_EQUAL, ">=")
+            return self.add_token(TokenType.GREATER_THAN, ">")
 
-        if character == ':' and self.peek() == '=':
+        if character == ":" and self.peek() == "=":
             self.advance()
-            return self.add_token(TokenType.ASSIGN, ':=')
+            return self.add_token(TokenType.ASSIGN, ":=")
 
-        if character == '=':
-            if self.peek() == '/' and self.peek_next() == '=':
+        if character == "=":
+            if self.peek() == "/" and self.peek_next() == "=":
                 self.advance()
                 self.advance()
-                return self.add_token(TokenType.NOT_EQUAL, '=/=')
-            return self.add_token(TokenType.EQUAL, '=')
+                return self.add_token(TokenType.NOT_EQUAL, "=/=")
+            return self.add_token(TokenType.EQUAL, "=")
 
-        if character == ';':
+        if character == ";":
             return self.add_token(TokenType.SEMICOLON, character)
 
-        if character == '+':
+        if character == "+":
             return self.add_token(TokenType.PLUS, character)
 
-        if character == '/':
+        if character == "/":
             return self.add_token(TokenType.DIVIDE, character)
 
-        if character == '\\':
+        if character == "\\":
             self.comment()
             return
 
-        if character == '*':
+        if character == "*":
             return self.add_token(TokenType.MULTIPLY, character)
 
-        if character == '?':
+        if character == "?":
             return self.add_token(TokenType.PROBABILITY, character)
 
-        if character == '&':
+        if character == "&":
             return self.add_token(TokenType.AND, character)
 
-        if character == '!':
+        if character == "!":
             return self.add_token(TokenType.NOT, character)
 
-        if character == '~':
+        if character == "~":
             return self.add_token(TokenType.DEFAULT, character)
 
-        if character == '-':
-            if self.peek() == '-':
+        if character == "-":
+            if self.peek() == "-":
                 self.advance()
-                return self.add_token(TokenType.MINUSMINUS, '--')
+                return self.add_token(TokenType.MINUSMINUS, "--")
             return self.add_token(TokenType.MINUS, character)
 
-        if character == '(':
+        if character == "(":
             return self.add_token(TokenType.LPAREN, character)
 
-        if character == ')':
+        if character == ")":
             return self.add_token(TokenType.RPAREN, character)
 
-        if character == '{':
+        if character == "{":
             return self.add_token(TokenType.LBRACKET, character)
 
-        if character == '}':
+        if character == "}":
             return self.add_token(TokenType.RBRACKET, character)
 
-        if character == '[':
+        if character == "[":
             return self.add_token(TokenType.LSQUARE, character)
 
-        if character == ']':
+        if character == "]":
             return self.add_token(TokenType.RSQUARE, character)
 
-        if character == ',':
+        if character == ",":
             return self.add_token(TokenType.COMMA, character)
 
-        if character == '%' and self.peek().isdigit():
+        if character == "%" and self.peek().isdigit():
             element = int(self.advance(), 10)
             if element not in [1, 2]:
-                error_handler.report(ScannerError(
-                    self._line, self._column,
-                    f"{element} is not a pair value"),)
+                error_handler.report(
+                    ScannerError(self._line, self._column, f"{element} is not a pair value"),
+                )
                 return
             return self.add_token(TokenType.PAIR_VALUE, element)
 
-        if character == '#':
+        if character == "#":
             return self.add_token(TokenType.SAMPLES, character)
 
-        if character in ('U', '@'):
+        if character in ("U", "@"):
             return self.add_token(TokenType.UNION, character)
 
-        if character == '.' and self.peek() == '.':
+        if character == "." and self.peek() == ".":
             self.advance()
-            return self.add_token(TokenType.RANGE, '..')
+            return self.add_token(TokenType.RANGE, "..")
 
-        if (character.lower() == 'd' or character.lower() == 'z'):
+        if character.lower() == "d" or character.lower() == "z":
             if not self.peek().isalpha():
                 return self.add_token(TokenType.DICE, character)
 
-        if character in [' ', '\t', '\r']:
+        if character in [" ", "\t", "\r"]:
             return
 
         if character == '"':
             return self.string()
 
-        if character == '\n':
+        if character == "\n":
             self._line += 1
             self._column = 0
             return
@@ -216,8 +212,7 @@ class Tokenizer:
         if character.isalpha():
             return self.identifier()
 
-        error_handler.report(ScannerError(
-            self._line, self._column, f"Unexpected character: {character}"))
+        error_handler.report(ScannerError(self._line, self._column, f"Unexpected character: {character}"))
 
     def is_at_end(self):
         return self._current >= len(self.source)
@@ -228,25 +223,24 @@ class Tokenizer:
         return self.source[self._current - 1]
 
     def comment(self):
-        res = ''
+        res = ""
 
         self.advance()
-        while self.peek() != '\n':
+        while self.peek() != "\n":
             res += self.advance()
         return res
 
     def peek(self):
         if self.is_at_end():
-            return '\0'
+            return "\0"
 
         return self.source[self._current]
 
     def peek_next(self):
         if self._current + 1 >= len(self.source):
-            return '\0'
+            return "\0"
         return self.source[self._current + 1]
 
     def add_token(self, _type: TokenType, literal: TokenLiteral):
-        text = self.source[self._start:self._current]
-        self.tokens.append(
-            Token(_type, text, literal, self._line, self._start))
+        text = self.source[self._start : self._current]
+        self.tokens.append(Token(_type, text, literal, self._line, self._start))

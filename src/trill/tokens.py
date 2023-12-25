@@ -4,87 +4,87 @@ from typing import Union
 
 
 class TokenType(Enum):
-    COMMENT = '\\'
-    COMMA = ','
-    SEMICOLON = ';'
+    COMMENT = "\\"
+    COMMA = ","
+    SEMICOLON = ";"
 
-    LBRACKET = '{'
-    RBRACKET = '}'
-    LPAREN = '('
-    RPAREN = ')'
-    LSQUARE = '['
-    RSQUARE = ']'
-    PAIR_VALUE = '%'
+    LBRACKET = "{"
+    RBRACKET = "}"
+    LPAREN = "("
+    RPAREN = ")"
+    LSQUARE = "["
+    RSQUARE = "]"
+    PAIR_VALUE = "%"
 
-    ASSIGN = ':='
-    DEFAULT = '~'
+    ASSIGN = ":="
+    DEFAULT = "~"
 
-    DIVIDE = '/'
-    MINUS = '-'
-    MULTIPLY = '*'
-    PLUS = '+'
-    MODULO = 'mod'
+    DIVIDE = "/"
+    MINUS = "-"
+    MULTIPLY = "*"
+    PLUS = "+"
+    MODULO = "mod"
 
-    AND = '&'
-    NOT = '!'
+    AND = "&"
+    NOT = "!"
 
-    EQUAL = '='
-    GREATER_THAN = '>'
-    GREATER_THAN_OR_EQUAL = '>='
-    LESS_THAN = '<'
-    LESS_THAN_OR_EQUAL = '<='
-    MINUSMINUS = '--'
-    NOT_EQUAL = '=/='
-    SAMPLES = '#'
+    EQUAL = "="
+    GREATER_THAN = ">"
+    GREATER_THAN_OR_EQUAL = ">="
+    LESS_THAN = "<"
+    LESS_THAN_OR_EQUAL = "<="
+    MINUSMINUS = "--"
+    NOT_EQUAL = "=/="
+    SAMPLES = "#"
 
-    PROBABILITY = '?'
+    PROBABILITY = "?"
 
-    FLOAT = 'float'
-    INTEGER = 'integer'
-    IDENTIFIER = 'identifier'
-    STRING = 'string'
-    SIGN = 'sign'
+    FLOAT = "float"
+    INTEGER = "integer"
+    IDENTIFIER = "identifier"
+    STRING = "string"
+    SIGN = "sign"
 
-    DICE = 'dice'  # Dice that goes from 1 to N
-    ZERODICE = 'zerodice'  # Dice that goes from zero to N-1
+    DICE = "dice"  # Dice that goes from 1 to N
+    ZERODICE = "zerodice"  # Dice that goes from zero to N-1
 
-    COUNT = 'count'
-    DIFFERENT = 'different'
-    LARGEST = 'largest'
-    LEAST = 'least'
-    MAX = 'max'
-    MAXIMAL = 'maximal'
-    MEDIAN = 'median'
-    MIN = 'min'
-    MINIMAL = 'minimal'
-    SUM = 'sum'
+    COUNT = "count"
+    DIFFERENT = "different"
+    LARGEST = "largest"
+    LEAST = "least"
+    MAX = "max"
+    MAXIMAL = "maximal"
+    MEDIAN = "median"
+    MIN = "min"
+    MINIMAL = "minimal"
+    SUM = "sum"
 
-    CHOOSE = 'choose'
-    DROP = 'drop'
-    KEEP = 'keep'
-    PICK = 'pick'
-    RANGE = 'range'
-    UNION = 'union'
+    CHOOSE = "choose"
+    DROP = "drop"
+    KEEP = "keep"
+    PICK = "pick"
+    RANGE = "range"
+    UNION = "union"
 
-    IF = 'if'
-    THEN = 'then'
-    ELSE = 'else'
-    FOREACH = 'foreach'
-    IN = 'in'
-    DO = 'do'
-    REPEAT = 'repeat'
-    WHILE = 'while'
-    UNTIL = 'until'
-    ACCUMULATE = 'accumulate'
+    IF = "if"
+    THEN = "then"
+    ELSE = "else"
+    FOREACH = "foreach"
+    IN = "in"
+    DO = "do"
+    REPEAT = "repeat"
+    WHILE = "while"
+    UNTIL = "until"
+    ACCUMULATE = "accumulate"
 
-    COMPOSITIONAL = 'compositional'
-    FUNCTION = 'function'
-    CALL = 'call'
+    COMPOSITIONAL = "compositional"
+    FUNCTION = "function"
+    CALL = "call"
 
     TEXTBOX = "'"
     TEXTALIGN = "textalign"
 
-    EOF = 'eof'
+    EOF = "eof"
 
 
 TokenLiteral = Union[str, int, float, None]
@@ -97,7 +97,14 @@ class Token:
     line: int
     column: int
 
-    def __init__(self, _type: TokenType, lexeme: str, literal: TokenLiteral, line: int, column: int):
+    def __init__(
+        self,
+        _type: TokenType,
+        lexeme: str,
+        literal: TokenLiteral,
+        line: int,
+        column: int,
+    ):
         """Create a token.
 
         Keyword arguments:
@@ -114,7 +121,7 @@ class Token:
         self.column = column
 
     def __str__(self):
-        literal = self.literal if self.literal is not None else ''
+        literal = self.literal if self.literal is not None else ""
         return f"{self.token_type.value} {self.lexeme} {literal}"
 
     def __repr__(self):
@@ -125,4 +132,4 @@ class Token:
         if not isinstance(o, self.__class__):
             return False
 
-        return (self.token_type == o.token_type and self.lexeme == o.lexeme and self.literal == o.literal)
+        return self.token_type == o.token_type and self.lexeme == o.lexeme and self.literal == o.literal

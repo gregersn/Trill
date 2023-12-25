@@ -9,6 +9,7 @@ from .error import handler as error_handler, ParserError
 
 class Parser:
     """Basic Troll parser."""
+
     tokens: List[Token]
     current: int = 0
 
@@ -61,8 +62,7 @@ class Parser:
 
     def parse(self):
         # roll ->  (function* | expression)
-        statements: List[Union[statement.Statement,
-                               expression.Expression]] = []
+        statements: List[Union[statement.Statement, expression.Expression]] = []
         while not self.is_at_end():
             expr = self.declaration()
             if expr:
@@ -79,14 +79,16 @@ class Parser:
         else:
             repeats = 1
 
-        self.consume(TokenType.TEXTBOX, 'Expected a string operator.')
+        self.consume(TokenType.TEXTBOX, "Expected a string operator.")
         if not isinstance(repeats, int):
             self.error(f"Type error: expected int, got {type(repeats)}")
             return None
 
         return statement.Print(self.parse_expression(), repeats)
 
-    def declaration(self) -> Optional[Union[statement.Statement, expression.Expression]]:
+    def declaration(
+        self,
+    ) -> Optional[Union[statement.Statement, expression.Expression]]:
         # statement -> exprStatement | printStatement;
 
         if self.match(TokenType.COMPOSITIONAL):
@@ -159,7 +161,7 @@ class Parser:
 
     def foreach_expression(self):
         iterator = self.primary()
-        self.consume(TokenType.IN, 'Expecting IN')
+        self.consume(TokenType.IN, "Expecting IN")
         source = self.parse_expression()
         self.consume(TokenType.DO, "Expected DO")
         block = self.parse_expression()
@@ -167,8 +169,7 @@ class Parser:
         err = False
 
         if not isinstance(iterator, expression.Variable):
-            self.error(
-                f"Expected iterator to be a variable, got {type(expression.Variable)}")
+            self.error(f"Expected iterator to be a variable, got {type(expression.Variable)}")
             err = True
 
         if not source:
@@ -224,8 +225,7 @@ class Parser:
         return expression.Accumulate(action, qualifier)
 
     def function_declaration(self) -> Optional[statement.Function]:
-        identifier = self.consume(
-            TokenType.IDENTIFIER, "Expected function identifier.")
+        identifier = self.consume(TokenType.IDENTIFIER, "Expected function identifier.")
 
         self.consume(TokenType.LPAREN, "Expect '(' after function name.")
         parameters: List[Token] = []
@@ -256,8 +256,7 @@ class Parser:
         return statement.Function(identifier, parameters, expr)
 
     def compositional_declaration(self) -> Optional[statement.Compositional]:
-        identifier = self.consume(
-            TokenType.IDENTIFIER, "Expected compositional identifier.")
+        identifier = self.consume(TokenType.IDENTIFIER, "Expected compositional identifier.")
 
         self.consume(TokenType.LPAREN, "Expect '(' after compositional name.")
         empty = self.primary()
@@ -303,8 +302,7 @@ class Parser:
         return expression.Binary(count, selector, selection)
 
     def function_call(self):
-        name = self.consume(TokenType.IDENTIFIER,
-                            "Expected name of function to call.")
+        name = self.consume(TokenType.IDENTIFIER, "Expected name of function to call.")
 
         parameters: List[expression.Expression] = []
         self.consume(TokenType.LPAREN, "Expect parenthesis for function call")
@@ -496,12 +494,12 @@ class Parser:
 
         # Right grouping operators.
         while self.match(
-                TokenType.EQUAL,
-                TokenType.LESS_THAN,
-                TokenType.GREATER_THAN,
-                TokenType.LESS_THAN_OR_EQUAL,
-                TokenType.GREATER_THAN_OR_EQUAL,
-                TokenType.NOT_EQUAL,
+            TokenType.EQUAL,
+            TokenType.LESS_THAN,
+            TokenType.GREATER_THAN,
+            TokenType.LESS_THAN_OR_EQUAL,
+            TokenType.GREATER_THAN_OR_EQUAL,
+            TokenType.NOT_EQUAL,
         ):
             operator = self.previous()
             factor = self.factor()
@@ -605,8 +603,7 @@ class Parser:
             while not self.check(TokenType.RBRACKET):
                 elements.append(self.parse_expression())
                 if not self.check(TokenType.RBRACKET):
-                    self.consume(TokenType.COMMA,
-                                 "Expect ',' to separate elements.")
+                    self.consume(TokenType.COMMA, "Expect ',' to separate elements.")
             self.consume(TokenType.RBRACKET, "Missing '}' to close list.")
             return expression.List(elements)
 

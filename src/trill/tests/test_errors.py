@@ -1,3 +1,4 @@
+"""Test errors."""
 import pytest
 from trill.tokenizer import Tokenizer
 from trill.error import handler as error_handler

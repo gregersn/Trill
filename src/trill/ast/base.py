@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import random
 from typing import Any, Optional, TypeVar, Generic
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class UnknownNodeType(Exception):
@@ -19,7 +19,7 @@ class Visitor(Generic[T]):
             seed = random.randrange(sys.maxsize)
         random.seed(seed)
 
-    def visit_generic(self, node: 'Node'):
+    def visit_generic(self, node: "Node"):
         """Visit a generic node."""
         raise UnknownNodeType(f"No visit_{type(node).__name__} method")
 
@@ -30,7 +30,7 @@ class Node:
 
     def accept(self, visitor: Visitor[Any]):
         """Accept visitor."""
-        method_name = 'visit_' + type(self).__name__ + '_' + type(self).__bases__[0].__name__
+        method_name = "visit_" + type(self).__name__ + "_" + type(self).__bases__[0].__name__
         visitor_function = getattr(visitor, method_name)
         return visitor_function(self)
 

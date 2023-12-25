@@ -10,7 +10,10 @@ from trill.tokenizer import Tokenizer
 from trill.tests.cases import testcases
 
 
-@pytest.mark.parametrize("roll,result", [(case.roll, case.interpret_result) for case in testcases if case.interpret_result])
+@pytest.mark.parametrize(
+    "roll,result",
+    [(case.roll, case.interpret_result) for case in testcases if case.interpret_result],
+)
 def test_interpret(roll: str, result: List[Any]):
     scanner = Tokenizer(roll)
     parser = Parser(scanner.scan_tokens())

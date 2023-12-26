@@ -2,9 +2,11 @@
 from pathlib import Path
 from typing import Optional
 import typer
+
 from .tokens import TokenType
 from .tokenizer import Token, Tokenizer
 from .interpreter import Interpreter
+from .calculator import Calculator
 from .parser import Parser
 from .ast.printer import ASTPrinter
 from .ast.expression import Binary, Grouping, Literal, Unary
@@ -29,6 +31,9 @@ def run(
     source: str = typer.Argument(..., help="Source of dice rolls."),
     average: bool = typer.Option(False, help="Use average dice values."),
     seed: Optional[int] = typer.Option(None, help="Set random seed."),
+    probabilities: bool = typer.Option(False, help="Calculate probabilities."),
+    digits: int = typer.Option(3, help="Number of digits in probabilities."),
+    multiplier: int = typer.Option(100, help="Use 100 for percent (default)."),
 ):
     """
     Use SOURCE to roll dice according to the Troll language.
@@ -49,6 +54,48 @@ def run(
 
     for line in result:
         print(line)
+
+    if probabilities:
+        from rich.console import Console
+        from rich.table import Table
+        from rich.bar import Bar
+
+        histogram, roll_average, spread, mean_deviation = Calculator().interpret(parsed)
+        total = 1.0
+
+        table = Table(title="Probabilities")
+
+        table.add_column("Value", justify="right")
+        if multiplier == 100:
+            table.add_column("% =", justify="right")
+            table.add_column("% ≥", justify="right")
+        else:
+            table.add_column(f"x{multiplier} =", justify="right")
+            table.add_column(f"x{multiplier} ≥", justify="right")
+
+        table.add_column("Probability graph")
+
+        for value, chance in dict(sorted(histogram.items())).items():
+            if isinstance(value, tuple):
+                value = " ".join(str(x) for x in value)
+
+            table.add_row(
+                f"{value}",
+                f"{round(chance * multiplier, digits):.{digits}f}",
+                f"{round(total  * multiplier, digits):.{digits}f}",
+                Bar(1, 0, chance),
+            )
+
+            total -= chance
+
+        console = Console()
+        console.print(table)
+        if roll_average:
+            console.print(f"Average: {roll_average}")
+        if spread:
+            console.print(f"Spread: {spread}")
+        if mean_deviation:
+            console.print(f"Mean deviation: {mean_deviation}")
 
 
 if __name__ == "__main__":

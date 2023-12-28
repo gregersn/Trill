@@ -61,7 +61,6 @@ class Parser:
         self.error(message)
 
     def parse(self):
-        # roll ->  (function* | expression)
         statements: List[Union[statement.Statement, expression.Expression]] = []
         while not self.is_at_end():
             expr = self.declaration()
@@ -89,8 +88,6 @@ class Parser:
     def declaration(
         self,
     ) -> Optional[Union[statement.Statement, expression.Expression]]:
-        # statement -> exprStatement | printStatement;
-
         if self.match(TokenType.COMPOSITIONAL):
             return self.compositional_declaration()
 

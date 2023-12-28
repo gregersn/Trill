@@ -2,17 +2,7 @@
 import itertools
 import math
 import random
-from typing import (
-    ChainMap,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import ChainMap, Dict, List, Sequence, Tuple, TypeVar, Union, cast
 
 from trill.tokens import TokenType
 from trill.types import Number, NumberList

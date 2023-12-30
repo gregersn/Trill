@@ -1,5 +1,7 @@
 """A Parser that prints the AST tree."""
-from typing import List
+from typing import List, Sequence, Union
+
+from trill.tokens import Token
 
 from .base import Node
 from . import expression
@@ -7,13 +9,13 @@ from . import statement
 
 
 class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[str]):
-    def print(self, exprs: List[Node]):
+    def print(self, exprs: Sequence[Node]):
         output: List[str] = []
         for expr in exprs:
             output.append(str(expr.accept(self)))
         return output
 
-    def parenthesize(self, name: str, *exprs: expression.Expression):
+    def parenthesize(self, name: str, *exprs: Union[expression.Expression, statement.Print]):
         output: List[str] = []
 
         output.append(f"({name}")
@@ -74,13 +76,22 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
         parameters = stmt.parameters
         expr = stmt.expression
 
-        return self.parenthesize(f"function {name.literal} ({','.join(p.literal for p in parameters)})", expr)
+        if not isinstance(expr, (expression.Expression, statement.Print)):
+            raise TypeError(type(expr))
+
+        return self.parenthesize(f"function {name.literal} ({','.join(str(p.literal) for p in parameters)})", expr)
 
     def visit_Compositional_Statement(self, stmt: statement.Compositional):
         name = stmt.name
         empty = stmt.empty
         singleton = stmt.singleton
         union = stmt.union
+
+        if not isinstance(singleton, Token):
+            raise TypeError(f"Expected Token, got {type(singleton)}")
+
+        if not isinstance(union, Token):
+            raise TypeError(f"Expected Token, got {type(union)}")
 
         return self.parenthesize(f"compositional {name.literal} {empty.value} {singleton.literal} {union.literal}")
 
@@ -91,4 +102,6 @@ class ASTPrinter(expression.ExpressionVisitor[str], statement.StatementVisitor[s
         return self.parenthesize(f"textbox {repeats}", expr)
 
     def visit_TextAlign_Expression(self, expr: expression.TextAlign):
+        if not isinstance(expr.right, (expression.Expression, statement.Print)):
+            raise TypeError(type(expr.right))
         return self.parenthesize("textalign", expr.left, expr.right)

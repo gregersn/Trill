@@ -1,9 +1,13 @@
 """Expression base code."""
 from dataclasses import dataclass
-from typing import Union, List as TList
+from typing import TYPE_CHECKING, Union, List as TList
+
 from ..tokens import Token
 
 from .base import T, Visitor, Node
+
+if TYPE_CHECKING:
+    from trill.ast.statement import Statement
 
 
 class ExpressionVisitor(Visitor[T]):
@@ -26,7 +30,7 @@ class Binary(Expression):
 class TextAlign(Expression):
     left: Expression
     operator: Token
-    right: Expression
+    right: Union[Expression, "Statement"]
 
 
 @dataclass

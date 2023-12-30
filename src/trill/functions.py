@@ -1,82 +1,115 @@
 """Functions for use by the interpreter."""
+import itertools
 import random
-from typing import Any, Iterable, List, Literal, Sequence, Union, cast
+import operator
+from typing import Any, Dict, Iterable, List, Sequence, Tuple, Union, cast
 from trill.tokens import Token, TokenType
 
 from trill.types import Number, NumberList
+
+CALC_OPERATORS = {
+    TokenType.PLUS: operator.add,
+    TokenType.MINUS: operator.sub,
+    TokenType.DIVIDE: operator.floordiv,
+    TokenType.MULTIPLY: operator.mul,
+}
+
+
+COMPARISON_OPERATORS = {
+    TokenType.LESS_THAN: operator.lt,
+    TokenType.LESS_THAN_OR_EQUAL: operator.le,
+    TokenType.GREATER_THAN: operator.gt,
+    TokenType.GREATER_THAN_OR_EQUAL: operator.ge,
+    TokenType.EQUAL: operator.eq,
+    TokenType.NOT_EQUAL: operator.ne,
+}
+
+COLLECTION_TOKENS = {TokenType.SAMPLES: True, TokenType.LARGEST: True, TokenType.LEAST: True}
+
+
+Probabilities = Dict[int, Union[int, float]]
+GroupProbabilities = Dict[Tuple[int, ...], Union[int, float]]
 
 
 class UnknownOperator(Exception):
     """Unknown operator."""
 
 
-def dice_roll(sides: int, count: int = 1, start: int = 1):
-    return [random.randint(start, sides) for _ in range(int(count))]
-
-
 def dice_average(sides: int, count: int = 1, start: int = 1):
     return [(sides + start) / 2] * count
 
 
-def text_align(
-    left: Union[Number, NumberList, str], right: Union[Number, NumberList, str], align_operator: Literal["|>", "<|", "<>", "||"]
-):
-    if isinstance(left, str):
-        left = left.split("\n")
+def dice_roll(sides: int, count: int = 1, start: int = 1):
+    return [random.randint(start, sides) for _ in range(int(count))]
 
-    if isinstance(right, str):
-        right = right.split("\n")
 
-    if not isinstance(left, list):
-        left = [left]
-    if not isinstance(right, list):
-        right = [right]
+def dice_probabilities(sides: int, z: bool = False) -> Dict[int, Union[int, float]]:
+    start = 0 if z else 1
 
-    max_length_left = len(str(max(left, key=lambda x: len(str(x)))))
-    max_length_right = len(str(max(right, key=lambda x: len(str(x)))))
+    return {k: 1 for k in range(start, sides + start)}
+
+
+def text_align(left: Union[Number, NumberList, str], right: Union[Number, NumberList, str], align_operator: str):
+    left_value = left
+    right_value = right
+
+    if isinstance(left_value, str):
+        left_value = left_value.split("\n")
+
+    if isinstance(right_value, str):
+        right_value = right_value.split("\n")
+
+    if not isinstance(left_value, list):
+        left_value = [left_value]
+    if not isinstance(right_value, list):
+        right_value = [right_value]
+
+    max_length_left = len(str(max(left_value, key=lambda x: len(str(x)))))
+    max_length_right = len(str(max(right_value, key=lambda x: len(str(x)))))
     max_length = max(max_length_left, max_length_right)
 
     if align_operator == "|>":
-        output = [f"{t:<{max_length}}" for t in left] + [f"{t:<{max_length}}" for t in right]
+        output = [f"{t:<{max_length}}" for t in left_value] + [f"{t:<{max_length}}" for t in right_value]
         return "\n".join(output)
 
     if align_operator == "<|":
-        output = [f"{t:>{max_length}}" for t in left] + [f"{t:>{max_length}}" for t in right]
+        output = [f"{t:>{max_length}}" for t in left_value] + [f"{t:>{max_length}}" for t in right_value]
         return "\n".join(output)
 
     if align_operator == "<>":
-        output = [f"{t:^{max_length}}" for t in left] + [f"{t:^{max_length}}" for t in right]
+        output = [f"{t:^{max_length}}" for t in left_value] + [f"{t:^{max_length}}" for t in right_value]
         return "\n".join(output)
 
     if align_operator == "||":
-        max_height = max(len(left), len(right))
+        max_height = max(len(left_value), len(right_value))
 
-        left += [" " * max_length_left] * (max_height - len(left))
-        right += [" " * max_length_right] * (max_height - len(right))
+        left_value += [" " * max_length_left] * (max_height - len(left_value))
+        right_value += [" " * max_length_right] * (max_height - len(right_value))
 
-        preliminary = list(zip(left, right))
+        preliminary = list(zip(left_value, right_value))
 
         return "\n".join(["".join([str(v) for v in t]) for t in preliminary])
 
     raise NotImplementedError(align_operator)
 
 
-def unary_expression(token_type: TokenType, value: Any, operator: Token, average: bool = False):
+def unary_expression(token_type: TokenType, value: Any, expression_operator: Token, average: bool = False):
     if token_type == TokenType.NOT:
         if not value:
             return 1
         return cast(Sequence[int], [])
 
     if token_type == TokenType.PAIR_VALUE:
-        v = operator.literal
-
-        return value[v - 1]
+        v = expression_operator.literal
+        if isinstance(v, int):
+            return value[v - 1]
+        raise NotImplementedError(f"{v} is not valid for {TokenType.PAIR_VALUE}")
 
     if token_type == TokenType.MINUS:
         return -value
 
     if token_type == TokenType.DICE:
-        start = 0 if operator.lexeme == "z" else 1
+        start = 0 if expression_operator.lexeme == "z" else 1
 
         if average:
             return dice_average(value, start=start)[0]
@@ -146,9 +179,9 @@ def unary_expression(token_type: TokenType, value: Any, operator: Token, average
 
 
 def collection_operation(
-    token_type: Literal[TokenType.SAMPLES, TokenType.LARGEST, TokenType.LEAST],
+    token_type: TokenType,
     count: int,
-    collection: Sequence,
+    collection: Union[Sequence[Any], int],
 ):
     if token_type == TokenType.SAMPLES:
         output: List[Union[int, float, str]] = []
@@ -164,10 +197,50 @@ def collection_operation(
     if count == 0:
         return cast(Sequence[int], [])
 
-    if token_type == TokenType.LARGEST:
-        return list(sorted(collection))[-count:]
+    if isinstance(collection, Iterable):
+        if token_type == TokenType.LARGEST:
+            return list(sorted(collection))[-count:]
 
-    if token_type == TokenType.LEAST:
-        return list(sorted(collection))[:-count]
+        if token_type == TokenType.LEAST:
+            return list(sorted(collection))[:-count]
 
     raise NotImplementedError(token_type)
+
+
+def group_probabilities(picks: int, group: Union[Probabilities, GroupProbabilities]):
+    combinations = list(sorted([tuple(sorted(x)) for x in itertools.product(group, repeat=picks)]))
+    groups = itertools.groupby(combinations)
+    probabilities = {k: v / len(combinations) for k, v in ((x, sum(1 for _ in y)) for x, y in groups)}
+
+    return probabilities
+
+
+def collection_probabilities(
+    token_type: TokenType,
+    count: int,
+    collection: Sequence[Any],
+    prev_probabilities: Union[Probabilities, GroupProbabilities],
+):
+    if token_type == TokenType.SAMPLES:
+        output = group_probabilities(count, prev_probabilities)
+        return collection_operation(token_type, count, collection), output
+
+    if token_type in [TokenType.LARGEST, TokenType.LEAST]:
+        if count == 0:
+            return cast(Sequence[int], [])
+
+        largest = token_type == TokenType.LARGEST
+
+        probabilities: Dict[Tuple[int, ...], float] = {}
+        for dice, chance in prev_probabilities.items():
+            if not isinstance(dice, tuple):
+                raise TypeError("Unknon type in dice")
+            selected_dice = tuple(sorted(dice, reverse=largest))[:count]
+            if selected_dice in probabilities:
+                probabilities[selected_dice] += chance
+            else:
+                probabilities[selected_dice] = chance
+
+        return list(sorted(collection))[-count:], probabilities
+
+    raise NotImplementedError(token_type, count, collection, prev_probabilities)

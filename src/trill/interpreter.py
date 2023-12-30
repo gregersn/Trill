@@ -1,5 +1,4 @@
 """Troll interpreter."""
-import operator
 from typing import ChainMap, Dict, TypeVar, List, Any, Union
 import random
 from trill import functions
@@ -51,8 +50,7 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         for stmt in statements:
             if isinstance(stmt, statement.Function):
                 continue
-            if isinstance(stmt, (statement.Statement, expression.Expression)):
-                output.append(stmt.accept(self))
+            output.append(stmt.accept(self))
         return output
 
     def visit_Literal_Expression(self, expr: expression.Literal) -> Union[str, int, float, List[str], List[List[str]], None]:
@@ -74,51 +72,43 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
     def visit_Binary_Expression(self, expr: expression.Binary):
         token_type = expr.operator.token_type
 
-        if token_type == TokenType.DEFAULT:
-            left = expr.left.accept(self)
-            return left or expr.right.accept(self)
-
         left_value = expr.left.accept(self)
+
+        if token_type == TokenType.DEFAULT:
+            # If a value (left) is not defined, use the default (right)
+            return left_value or expr.right.accept(self)
+
         right_value = expr.right.accept(self)
 
-        if token_type in [TokenType.SAMPLES, TokenType.LARGEST, TokenType.LEAST]:
+        if token_type in functions.COLLECTION_TOKENS:
             return functions.collection_operation(token_type, left_value, right_value)
 
-        if isinstance(expr.left, expression.Literal):
-            val = left_value
-            if isinstance(val, str):
-                left = self.variables.get(val)
-            else:
-                left = val
-        else:
-            left = left_value
-
-        if isinstance(expr.right, expression.Literal):
-            val = right_value
-            if isinstance(val, str):
-                right = self.variables.get(val)
-            else:
-                right = val
-        else:
-            right = right_value
+        left = self.variables.get(left_value, left_value) if isinstance(left_value, str) else left_value
+        right = self.variables.get(right_value) if isinstance(right_value, str) else right_value
 
         if token_type == TokenType.AND:
             return left and right
 
         if token_type == TokenType.DICE:
             start = 0 if expr.operator.lexeme == "z" else 1
+            if not (isinstance(right, int) and isinstance(left, (int, float))):
+                raise TypeError(f"Dice average only support ints, got {right} and {left}")
+
             if self.average:
                 return functions.dice_average(right, int(left), start)
-            return functions.dice_roll(right, left, start)
+
+            return functions.dice_roll(right, int(left), start)
 
         if token_type == TokenType.RANGE:
+            if not (isinstance(right, int) and isinstance(left, (int,))):
+                raise TypeError(f"Range only support ints, got {right} and {left}")
             return list(range(left, right + 1))
 
         if token_type == TokenType.UNION:
-            if isinstance(left, (int, float)):
+            if not isinstance(left, list):
                 left = [left]
 
-            if isinstance(right, (int, float)):
+            if not isinstance(right, list):
                 right = [right]
 
             return left + right
@@ -126,6 +116,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         if token_type == TokenType.PICK:
             if isinstance(left, (int, float)):
                 raise UnknownType("Unexpected scalar.")
+
+            if not isinstance(right, int):
+                raise TypeError("Length should be int")
 
             samples = min(len(left), right)
             if self.average:
@@ -136,40 +129,38 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             return random.sample(left, samples)
 
         if token_type in [TokenType.DROP, TokenType.KEEP, TokenType.MINUSMINUS]:
-            if isinstance(left, (int, float)):
+            if not isinstance(left, list):
                 left = [left]
 
-            if isinstance(right, (int, float)):
+            if not isinstance(right, list):
                 right = [right]
 
             if token_type == TokenType.DROP:
                 output = [x for x in left if x not in right]
 
-            if token_type == TokenType.KEEP:
+            elif token_type == TokenType.KEEP:
                 output = [x for x in left if x in right]
 
-            if token_type == TokenType.MINUSMINUS:
+            elif token_type == TokenType.MINUSMINUS:
                 output = list(left)
                 for v in right:
                     if v in output:
                         output.remove(v)
+            else:
+                raise TypeError("Something wrong is broken.")
 
             return output
 
-        COMPARISON_OPERATORS = {
-            TokenType.LESS_THAN: operator.lt,
-            TokenType.LESS_THAN_OR_EQUAL: operator.le,
-            TokenType.GREATER_THAN: operator.gt,
-            TokenType.GREATER_THAN_OR_EQUAL: operator.ge,
-            TokenType.EQUAL: operator.eq,
-            TokenType.NOT_EQUAL: operator.ne,
-        }
-
-        if token_type in COMPARISON_OPERATORS:
+        if token_type in functions.COMPARISON_OPERATORS:
             if isinstance(right, (int, float)):
                 right = [right]
+            elif not isinstance(right, list):
+                raise TypeError(f"Unexpected type {type(right)}")
 
-            check = COMPARISON_OPERATORS[token_type]
+            if not isinstance(left, (list, int, float)):
+                raise TypeError(f"Unexpected type {type(left)}")
+
+            check = functions.COMPARISON_OPERATORS[token_type]
             return [v for v in right if check(left, v)]
 
         if isinstance(left, list):
@@ -178,15 +169,8 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         if isinstance(right, list):
             right = right[0]
 
-        CALC_OPERATORS = {
-            TokenType.PLUS: operator.add,
-            TokenType.MINUS: operator.sub,
-            TokenType.DIVIDE: operator.floordiv,
-            TokenType.MULTIPLY: operator.mul,
-        }
-
-        if token_type in CALC_OPERATORS:
-            func = CALC_OPERATORS[token_type]
+        if token_type in functions.CALC_OPERATORS:
+            func = functions.CALC_OPERATORS[token_type]
             return func(left, right)
 
         raise functions.UnknownOperator(f"Unknown operator {expr.operator.token_type} in binary expression")
@@ -218,9 +202,16 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
 
     def visit_Assign_Expression(self, expr: expression.Assign):
         value = expr.value.accept(self)
+
+        if not isinstance(expr.name.literal, str):
+            raise TypeError("Variable name must be string")
+
         self.variables[expr.name.literal] = value
 
     def visit_Variable_Expression(self, expr: expression.Variable):
+        if not isinstance(expr.name.literal, str):
+            raise TypeError("Variable name must be string")
+
         return self.variables.get(expr.name.literal, None)
 
     def visit_Conditional_Expression(self, stmt: expression.Conditional):
@@ -233,6 +224,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.push()
 
         values = expr.source.accept(self)
+
+        if not isinstance(expr.iterator.name.literal, str):
+            raise TypeError("Variable name must be string")
 
         for val in values:
             self.variables[expr.iterator.name.literal] = val
@@ -257,6 +251,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             while not qualifier.accept(self) and not self.average:
                 res = action.accept(self)
 
+        if not isinstance(action_variable_name.literal, str):
+            raise TypeError(f"Expected string, got {action_variable_name.literal}")
+
         res = self.variables.get(action_variable_name.literal)
         self.pop()
         return res
@@ -269,6 +266,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         self.push()
         action_variable_name = action.name
         action.accept(self)
+
+        if not isinstance(action_variable_name.literal, str):
+            raise TypeError(f"Expected string, got {action_variable_name.literal}")
 
         result.append(self.variables.get(action_variable_name.literal))
 
@@ -287,12 +287,21 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
         return result
 
     def visit_Function_Statement(self, stmt: statement.Function):
+        if not isinstance(stmt.name.literal, str):
+            raise TypeError(f"Expected string, got {stmt.name.literal}")
+
         self.functions[stmt.name.literal] = stmt
 
     def visit_Compositional_Statement(self, stmt: statement.Compositional):
+        if not isinstance(stmt.name.literal, str):
+            raise TypeError(f"Expected string, got {stmt.name.literal}")
+
         self.functions[stmt.name.literal] = stmt
 
-    def visit_Call_Expression(self, expr: expression.Call):
+    def visit_Call_Expression(self, expr: expression.Call) -> Any:
+        if not isinstance(expr.name.literal, str):
+            raise TypeError("Function name must be string")
+
         stmt = self.functions[expr.name.literal]
 
         if isinstance(stmt, statement.Compositional):
@@ -311,6 +320,9 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
             stmt_operator = stmt.union
             for next_val in parameter.value:
                 if isinstance(stmt_operator, Token) and stmt_operator.token_type == TokenType.IDENTIFIER:
+                    if not isinstance(res, (str, int, float, type(None))):
+                        raise TypeError(f"Unsupported type error: {res}")
+
                     res = self.visit_Call_Expression(
                         expression.Call(
                             name=stmt_operator,
@@ -318,20 +330,32 @@ class Interpreter(expression.ExpressionVisitor[T], statement.StatementVisitor[T]
                         )
                     )
                 else:
+                    if not isinstance(stmt_operator, Token):
+                        raise TypeError(f"Expected Token, got {stmt_operator}")
+                    if not isinstance(res, (str, int, float, type(None))):
+                        raise TypeError(f"Unsupported type error: {res}")
                     res = self.visit_Binary_Expression(expression.Binary(expression.Literal(res), operator=stmt_operator, right=next_val))
         else:
             stmt_operator = stmt.singleton
             if isinstance(stmt_operator, Token) and stmt_operator.token_type == TokenType.IDENTIFIER:
                 res = self.visit_Call_Expression(expression.Call(name=stmt_operator, parameters=[expression.Literal(res)]))
             else:
+                if not isinstance(stmt_operator, Token):
+                    raise TypeError(f"Expected token, got {stmt_operator}")
                 res = self.visit_Unary_Expression(expression.Unary(operator=stmt_operator, right=parameter))
 
         self.pop()
+
+        if not isinstance(res, (str, int, float)):
+            raise TypeError(f"Unexpected type: {type(res)}")
         return res
 
     def call_function(self, expr: expression.Call, stmt: statement.Function):
         self.push()
         for name, value in zip(stmt.parameters, expr.parameters):
+            if not isinstance(name.literal, str):
+                raise TypeError("Name of variable must be string")
+
             self.variables[name.literal] = value.accept(self)
 
         if isinstance(stmt.expression, statement.Expression):

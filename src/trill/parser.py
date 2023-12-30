@@ -7,6 +7,10 @@ from .ast import statement
 from .error import handler as error_handler, ParserError
 
 
+class ParserException(Exception):
+    ...
+
+
 class Parser:
     """Basic Troll parser."""
 
@@ -59,6 +63,7 @@ class Parser:
         if self.check(_type):
             return self.advance()
         self.error(message)
+        return None
 
     def parse(self):
         statements: List[Union[statement.Statement, expression.Expression]] = []
@@ -106,7 +111,8 @@ class Parser:
             while self.match(TokenType.TEXTALIGN):
                 operator = self.previous()
                 right = self.declaration()
-                assert right is not None
+                if not isinstance(right, (expression.Expression, statement.Print)):
+                    raise TypeError(f"Expected Expression, got {type(right)}")
                 expr = expression.TextAlign(expr, operator, right)
             return expr
 
@@ -154,6 +160,9 @@ class Parser:
         if err:
             return None
 
+        if condition is None or true_result is None or false_result is None:
+            raise ParserException("Something wrong is broken.")
+
         return expression.Conditional(condition, true_result, false_result)
 
     def foreach_expression(self):
@@ -179,6 +188,9 @@ class Parser:
 
         if err:
             return None
+
+        if not isinstance(iterator, expression.Variable) or source is None or block is None:
+            raise ParserException("Something wrong is broken.")
 
         return expression.Foreach(iterator, source, block)
 
@@ -218,6 +230,9 @@ class Parser:
 
         if err:
             return None
+
+        if not isinstance(action, expression.Assign) or qualifier is None:
+            raise ParserException("Something wrong is broken.")
 
         return expression.Accumulate(action, qualifier)
 
@@ -264,6 +279,9 @@ class Parser:
         union = self.tokens[self.current]
         self.consume(union.token_type, "Expected identifier")
         self.consume(TokenType.RPAREN, "Expect ')' after last compositional parameter.")
+
+        if identifier is None or not isinstance(empty, expression.Literal):
+            raise ParserException("Something wrong is broken.")
 
         return statement.Compositional(identifier, empty, singleton, union)
 
@@ -504,6 +522,9 @@ class Parser:
                 self.error("Missing factor")
                 return None
 
+            if expr is None:
+                raise ParserException("Expected expression, found None")
+
             expr = expression.Binary(expr, operator, factor)
 
         return expr
@@ -631,3 +652,5 @@ class Parser:
 
         token = self.tokens[self.current]
         self.error(f"Unexpected token: '{token.lexeme}'")
+
+        return None

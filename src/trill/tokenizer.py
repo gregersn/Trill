@@ -128,7 +128,7 @@ class Tokenizer:
 
         if character == "\\":
             self.comment()
-            return
+            return None
 
         if character == "*":
             return self.add_token(TokenType.MULTIPLY, character)
@@ -178,7 +178,7 @@ class Tokenizer:
                 error_handler.report(
                     ScannerError(self._line, self._column, f"{element} is not a pair value"),
                 )
-                return
+                return None
             return self.add_token(TokenType.PAIR_VALUE, element)
 
         if character == "#":
@@ -196,7 +196,7 @@ class Tokenizer:
                 return self.add_token(TokenType.DICE, character)
 
         if character in [" ", "\t", "\r"]:
-            return
+            return None
 
         if character == '"':
             return self.string()
@@ -204,7 +204,7 @@ class Tokenizer:
         if character == "\n":
             self._line += 1
             self._column = 0
-            return
+            return None
 
         if character.isdigit():
             return self.number()
@@ -213,6 +213,7 @@ class Tokenizer:
             return self.identifier()
 
         error_handler.report(ScannerError(self._line, self._column, f"Unexpected character: {character}"))
+        return None
 
     def is_at_end(self):
         return self._current >= len(self.source)

@@ -1,8 +1,8 @@
 """Probability calculator for Trill."""
 import itertools
 import math
-import random
-from typing import ChainMap, Dict, List, Sequence, Tuple, TypeVar, Union, cast
+from typing import Any, ChainMap, Dict, List, Optional, TypeVar, Union
+from trill import functions
 
 from trill.tokens import TokenType
 from trill.types import Number, NumberList
@@ -10,12 +10,6 @@ from trill.types import Number, NumberList
 from .ast import expression, statement
 
 T = TypeVar("T")
-
-
-def dice_probabilities(sides: int, z: bool = False):
-    start = 0 if z else 1
-
-    return {k: 1 for k in range(start, sides + start)}
 
 
 class Calculator(expression.ExpressionVisitor[T], statement.StatementVisitor[T]):
@@ -29,24 +23,24 @@ class Calculator(expression.ExpressionVisitor[T], statement.StatementVisitor[T])
         statements: List[Union[expression.Expression, statement.Statement]],
         average: bool = False,
     ):
-        distribution: Dict[Union[int, float], float] = {}
-        average_value = None
-        spread = None
-        mean_deviation = None
+        distribution: Dict[int, float] = {}
+        average_value: Optional[float] = None
+        spread: Optional[float] = None
+        mean_deviation: Optional[float] = None
         self.average = average
 
         for stmt in statements:
             if isinstance(stmt, statement.Function):
-                distribution = self.execute(stmt)
+                distribution = stmt.accept(self)
 
         # Run statements, skip function declarations, as they are already done.
         for stmt in statements:
             if isinstance(stmt, statement.Function):
                 continue
             if isinstance(stmt, statement.Statement):
-                _, distribution = self.execute(stmt)
+                _, distribution = stmt.accept(self)
             if isinstance(stmt, expression.Expression):
-                _, distribution = self.evaluate(stmt)
+                _, distribution = stmt.accept(self)
 
         value_types = set(type(k) for k in distribution.keys())
 
@@ -69,18 +63,6 @@ class Calculator(expression.ExpressionVisitor[T], statement.StatementVisitor[T])
             mean_deviation,
         )
 
-    def execute(self, stmt: statement.Statement):
-        return stmt.accept(self)
-
-    def evaluate(self, expr: expression.Expression):
-        if isinstance(expr, (expression.Literal, expression.Unary, expression.Binary)):
-            return expr.accept(self)
-
-        if isinstance(expr, expression.Grouping):
-            return expr.accept(self)
-
-        raise NotImplementedError(expr)
-
     def visit_Literal_Expression(self, expr: expression.Literal):
         if expr.value is None:
             raise NotImplementedError("None value not supported for Literal in statistics.")
@@ -92,19 +74,17 @@ class Calculator(expression.ExpressionVisitor[T], statement.StatementVisitor[T])
     def visit_Unary_Expression(self, expr: expression.Unary):
         token_type = expr.operator.token_type
 
-        right, right_probabilities = self.evaluate(expr.right)
+        right, right_probabilities = expr.right.accept(self)
 
         if token_type == TokenType.DICE:
-            assert isinstance(right, int)
             start = 0 if expr.operator.lexeme == "z" else 1
 
             if self.average:
-                res = (right + start) / 2
-
+                res = functions.dice_average(right, 1, start)[0]
             else:
-                res = random.randint(start, right)
+                res = functions.dice_roll(right, 1, start)[0]
 
-            probs = dice_probabilities(right, expr.operator.lexeme == "z")
+            probs = functions.dice_probabilities(right, expr.operator.lexeme == "z")
 
             return res, probs
 
@@ -125,110 +105,51 @@ class Calculator(expression.ExpressionVisitor[T], statement.StatementVisitor[T])
     def visit_Binary_Expression(self, expr: expression.Binary):
         token_type = expr.operator.token_type
 
-        left_value, left_probabilities = self.evaluate(expr.left)
-        right_value, right_probabilities = self.evaluate(expr.right)
+        left_probabilities: Dict[int, Union[float, int]]
 
-        if token_type == TokenType.LARGEST:
-            count = left_value
-            if count == 0:
-                return cast(Sequence[int], [])
-            assert isinstance(right_value, list)
-            assert isinstance(count, int)
-            probabilities: Dict[Tuple[int, ...], float] = {}
-            for dice, chance in right_probabilities.items():
-                selected_dice = tuple(sorted(dice, reverse=True))[:count]
-                if selected_dice in probabilities:
-                    probabilities[selected_dice] += chance
-                else:
-                    probabilities[selected_dice] = chance
+        left_value, left_probabilities = expr.left.accept(self)
+        right_value, right_probabilities = expr.right.accept(self)
 
-            return list(sorted(right_value))[-count:], probabilities
+        if token_type in functions.COLLECTION_TOKENS:
+            return functions.collection_probabilities(token_type, left_value, right_value, right_probabilities)
 
-        if isinstance(expr.left, expression.Literal):
-            val = left_value
-            if isinstance(val, str):
-                left = self.variables.get(val)
-            else:
-                left = val
-        else:
-            left = left_value
-
-        if isinstance(expr.right, expression.Literal):
-            val = right_value
-            if isinstance(val, str):
-                right = self.variables.get(val)
-            else:
-                right = val
-        else:
-            right = right_value
+        left = self.variables.get(left_value, left_value) if isinstance(left_value, str) else left_value
+        right = self.variables.get(right_value) if isinstance(right_value, str) else right_value
 
         if token_type == TokenType.DICE:
             start = 0 if expr.operator.lexeme == "z" else 1
-            assert isinstance(right, (int))
-            assert isinstance(left, (int))
+
+            if not (isinstance(right, int) and isinstance(left, (int, float))):
+                raise TypeError(f"Dice average only support ints, got {right} and {left}")
+
             if self.average:
-                res = [(right + start) / 2] * int(left)
+                res = functions.dice_average(right, int(left), start)
 
-            res = [random.randint(start, right) for _ in range(int(left))]
-            dice_probs = dice_probabilities(right, expr.operator.lexeme == "z")
+            res = functions.dice_roll(right, int(left), start)
 
-            probability_groups = {}
+            dice_probs = functions.dice_probabilities(right, expr.operator.lexeme == "z")
+
+            probability_groups: Dict[int, Any] = {}
             for count in left_probabilities.keys():
-                combinations = list(sorted([tuple(sorted(x)) for x in itertools.product(dice_probs.keys(), repeat=count)]))
-                groups = itertools.groupby(combinations)
-                probabilities = {k: v / len(combinations) for k, v in ((x, sum(1 for _ in y)) for x, y in groups)}
+                probabilities = functions.group_probabilities(count, dice_probs)
                 probability_groups[count] = probabilities
 
             probabilities = {k: v for _, group_probs in probability_groups.items() for k, v in group_probs.items()}
 
             return res, probabilities
 
-        if token_type in [
-            TokenType.MULTIPLY,
-            TokenType.PLUS,
-            TokenType.MINUS,
-            TokenType.DIVIDE,
-        ]:
-
-            def op_multiply(a: int, b: int) -> int:
-                return a * b
-
-            def op_add(a: int, b: int) -> int:
-                return a + b
-
-            def op_subtract(a: int, b: int) -> int:
-                return a - b
-
-            def op_divide(a: int, b: int) -> float:
-                return a / b
-
-            operation = None
-
-            if token_type == TokenType.MULTIPLY:
-                operation = op_multiply
-
-            if token_type == TokenType.PLUS:
-                operation = op_add
-
-            if token_type == TokenType.MINUS:
-                operation = op_subtract
-
-            if token_type == TokenType.DIVIDE:
-                operation = op_divide
-
-            assert operation is not None
-
-            probabilities_keys = [operation(a, b) for a, b in itertools.product(left_probabilities.keys(), right_probabilities.keys())]
-
+        if token_type in functions.CALC_OPERATORS:
+            func = functions.CALC_OPERATORS[token_type]
+            probabilities_keys = [func(a, b) for a, b in itertools.product(left_probabilities.keys(), right_probabilities.keys())]
             probabilities_values = [a * b for a, b in itertools.product(left_probabilities.values(), right_probabilities.values())]
 
             return (
-                operation(left_value, right_value),
+                func(left_value, right_value),
                 dict(zip(probabilities_keys, probabilities_values)),
             )
 
-        raise NotImplementedError(token_type)
+        raise functions.UnknownOperator(token_type)
 
     def visit_Grouping_Expression(self, expr: expression.Grouping):
-        res = self.evaluate(expr.expression)
+        res = expr.expression.accept(self)
         return res

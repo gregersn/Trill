@@ -36,6 +36,10 @@ include = ["trill*"]
 exclude = ["trill.tests*"]
 namespaces = false
 
+[tool.setuptools.package-data]
+trill = ["py.typed"]
+
+
 [tool.pylint]
 max-line-length = 140
 

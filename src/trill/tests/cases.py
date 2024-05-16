@@ -52,9 +52,13 @@ testcases: Sequence[TestCase] = [
     TestCase("{1, 2, 3} pick 4", 9, ["(pick (collection 1 2 3) 4)"], [[1, 2, 3]]),
     TestCase("min {1, 2, 3}", 8, ["(min (collection 1 2 3))"], [1]),
     TestCase("max {1, 2, 3}", 8, ["(max (collection 1 2 3))"], [3]),
-    TestCase("minimal {1, 1, 2, 3, 3}", 12, ["(minimal (collection 1 1 2 3 3))"], [[1, 1]]),
-    TestCase("maximal {1, 1, 2, 3, 3}", 12, ["(maximal (collection 1 1 2 3 3))"], [[3, 3]]),
-    TestCase("largest 3 {4, 5, 2, 4, 7, 2}", 15, None, [[4, 5, 7]]),
+    TestCase(
+        "minimal {1, 1, 2, 3, 3}", 12, ["(minimal (collection 1 1 2 3 3))"], [[1, 1]]
+    ),
+    TestCase(
+        "maximal {1, 1, 2, 3, 3}", 12, ["(maximal (collection 1 1 2 3 3))"], [[3, 3]]
+    ),
+    TestCase("largest 3 {4, 5, 2, 4, 7, 2}", 15, None, [[7, 5, 4]]),
     TestCase("largest 3 4d6", 5, ["(largest 3 (d 4 6))"], [[3.5, 3.5, 3.5]]),
     TestCase("largest 1 {1, 2} + 1", 9, ["(+ (largest 1 (collection 1 2)) 1)"], [3]),
     TestCase("least 3 {4, 5, 2, 4, 7, 2}", 15, None, [[2, 2, 4]]),
@@ -97,13 +101,17 @@ testcases: Sequence[TestCase] = [
     TestCase(
         "x := 1; y := 3; if x = y then 2*x else max (x U y)",
         23,
-        ["(block (assign x 1); (assign y 3); (if (= x y) (* 2 x) (max (group (U x y)))))"],
+        [
+            "(block (assign x 1); (assign y 3); (if (= x y) (* 2 x) (max (group (U x y)))))"
+        ],
         [3],
     ),
     TestCase(
         "x := 2; y := 2; if x = y then 2*x else max (x U y)",
         23,
-        ["(block (assign x 2); (assign y 2); (if (= x y) (* 2 x) (max (group (U x y)))))"],
+        [
+            "(block (assign x 2); (assign y 2); (if (= x y) (* 2 x) (max (group (U x y)))))"
+        ],
         [4],
     ),
     TestCase("?0.9", 2, ["(? 0.9)"], [1]),
@@ -120,9 +128,15 @@ testcases: Sequence[TestCase] = [
         ["(block (assign x 3); (assign y 3); (if (& (= x 2) (= y 3)) 42 24))"],
         [24],
     ),
-    TestCase("foreach x in 1..3 do x+1", 10, ["(foreach x (.. 1 3) (+ x 1))"], [[2, 3, 4]]),
-    TestCase("repeat x:=d8 until x<8", 9, ["(repeat until (assign x (d 8)) (< x 8))"], [4.5]),
-    TestCase("repeat x:=d8 while x=8", 9, ["(repeat while (assign x (d 8)) (= x 8))"], [4.5]),
+    TestCase(
+        "foreach x in 1..3 do x+1", 10, ["(foreach x (.. 1 3) (+ x 1))"], [[2, 3, 4]]
+    ),
+    TestCase(
+        "repeat x:=d8 until x<8", 9, ["(repeat until (assign x (d 8)) (< x 8))"], [4.5]
+    ),
+    TestCase(
+        "repeat x:=d8 while x=8", 9, ["(repeat while (assign x (d 8)) (= x 8))"], [4.5]
+    ),
     TestCase(
         "repeat x:=2d6 until (min x)=/=(max x)",
         16,
@@ -138,7 +152,9 @@ testcases: Sequence[TestCase] = [
     TestCase(
         "N := 2; count 5< N#(accumulate x:=d10 while x=10)",
         20,
-        ["(block (assign N 2); (count (< 5 (# N (group (accumulate (assign x (d 10)) (= x 10)))))))"],
+        [
+            "(block (assign N 2); (count (< 5 (# N (group (accumulate (assign x (d 10)) (= x 10)))))))"
+        ],
         [2],
     ),
     TestCase("dX := 4; dX", 5, ["(block (assign dX 4); dX)"], [4]),
@@ -175,7 +191,9 @@ testcases: Sequence[TestCase] = [
         None,
         [None, 6],
     ),
-    TestCase("""function times(x,y) = x*y""", 11, ["(function times (x,y) (* x y))"], None),
+    TestCase(
+        """function times(x,y) = x*y""", 11, ["(function times (x,y) (* x y))"], None
+    ),
     TestCase(
         """function mul(v) =
 if v then (min v)*call mul(largest ((count v)-1) v)
@@ -212,7 +230,9 @@ call down(10)""",
         None,
     ),
     TestCase("""sum largest 3 4d6""", 6, ["(sum (largest 3 (d 4 6)))"], [3 * 3.5]),
-    TestCase("' sum largest 3 4d6", 7, ["(textbox 1 (sum (largest 3 (d 4 6))))"], [["10.5"]]),
+    TestCase(
+        "' sum largest 3 4d6", 7, ["(textbox 1 (sum (largest 3 (d 4 6))))"], [["10.5"]]
+    ),
     TestCase(
         "6 ' sum largest 3 4d6",
         8,
@@ -247,10 +267,14 @@ call down(10)""",
     TestCase(
         '"Str |>Dex|>Con|>Int|>Wis|>Chr" || 6\'sum largest 3 4d6',
         10,
-        ["(textalign Str |>Dex|>Con|>Int|>Wis|>Chr (textbox 6 (sum (largest 3 (d 4 6)))))"],
+        [
+            "(textalign Str |>Dex|>Con|>Int|>Wis|>Chr (textbox 6 (sum (largest 3 (d 4 6)))))"
+        ],
         ["Str 10.5\nDex 10.5\nCon 10.5\nInt 10.5\nWis 10.5\nChr 10.5"],
     ),
-    TestCase('"Foo "|| 3d6', 5, ["(textalign Foo  (d 3 6))"], ["Foo 3.5\n    3.5\n    3.5"]),
+    TestCase(
+        '"Foo "|| 3d6', 5, ["(textalign Foo  (d 3 6))"], ["Foo 3.5\n    3.5\n    3.5"]
+    ),
     TestCase(
         "largest(1,3d20)",
         8,

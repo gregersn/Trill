@@ -56,9 +56,9 @@ def run(
         print(line)
 
     if probabilities:
-        from rich.console import Console
-        from rich.table import Table
-        from rich.bar import Bar
+        from rich.console import Console  # pylint: disable=import-outside-toplevel
+        from rich.table import Table  # pylint: disable=import-outside-toplevel
+        from rich.bar import Bar  # pylint: disable=import-outside-toplevel
 
         histogram, roll_average, spread, mean_deviation = Calculator().interpret(parsed)
         total = 1.0

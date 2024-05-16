@@ -24,7 +24,11 @@ COMPARISON_OPERATORS = {
     TokenType.NOT_EQUAL: operator.ne,
 }
 
-COLLECTION_TOKENS = {TokenType.SAMPLES: True, TokenType.LARGEST: True, TokenType.LEAST: True}
+COLLECTION_TOKENS = {
+    TokenType.SAMPLES: True,
+    TokenType.LARGEST: True,
+    TokenType.LEAST: True,
+}
 
 
 Probabilities = Dict[int, Union[int, float]]
@@ -49,7 +53,11 @@ def dice_probabilities(sides: int, z: bool = False) -> Dict[int, Union[int, floa
     return {k: 1 for k in range(start, sides + start)}
 
 
-def text_align(left: Union[Number, NumberList, str], right: Union[Number, NumberList, str], align_operator: str):
+def text_align(
+    left: Union[Number, NumberList, str],
+    right: Union[Number, NumberList, str],
+    align_operator: str,
+):
     left_value = left
     right_value = right
 
@@ -69,15 +77,21 @@ def text_align(left: Union[Number, NumberList, str], right: Union[Number, Number
     max_length = max(max_length_left, max_length_right)
 
     if align_operator == "|>":
-        output = [f"{t:<{max_length}}" for t in left_value] + [f"{t:<{max_length}}" for t in right_value]
+        output = [f"{t:<{max_length}}" for t in left_value] + [
+            f"{t:<{max_length}}" for t in right_value
+        ]
         return "\n".join(output)
 
     if align_operator == "<|":
-        output = [f"{t:>{max_length}}" for t in left_value] + [f"{t:>{max_length}}" for t in right_value]
+        output = [f"{t:>{max_length}}" for t in left_value] + [
+            f"{t:>{max_length}}" for t in right_value
+        ]
         return "\n".join(output)
 
     if align_operator == "<>":
-        output = [f"{t:^{max_length}}" for t in left_value] + [f"{t:^{max_length}}" for t in right_value]
+        output = [f"{t:^{max_length}}" for t in left_value] + [
+            f"{t:^{max_length}}" for t in right_value
+        ]
         return "\n".join(output)
 
     if align_operator == "||":
@@ -93,7 +107,9 @@ def text_align(left: Union[Number, NumberList, str], right: Union[Number, Number
     raise NotImplementedError(align_operator)
 
 
-def unary_expression(token_type: TokenType, value: Any, expression_operator: Token, average: bool = False):
+def unary_expression(
+    token_type: TokenType, value: Any, expression_operator: Token, average: bool = False
+):
     if token_type == TokenType.NOT:
         if not value:
             return 1
@@ -198,19 +214,20 @@ def collection_operation(
         return cast(Sequence[int], [])
 
     if isinstance(collection, Iterable):
-        if token_type == TokenType.LARGEST:
-            return list(sorted(collection))[-count:]
-
-        if token_type == TokenType.LEAST:
-            return list(sorted(collection))[:-count]
+        largest = token_type == TokenType.LARGEST
+        return list(sorted(collection, reverse=largest))[:count]
 
     raise NotImplementedError(token_type)
 
 
 def group_probabilities(picks: int, group: Union[Probabilities, GroupProbabilities]):
-    combinations = list(sorted([tuple(sorted(x)) for x in itertools.product(group, repeat=picks)]))
+    combinations = list(
+        sorted([tuple(sorted(x)) for x in itertools.product(group, repeat=picks)])
+    )
     groups = itertools.groupby(combinations)
-    probabilities = {k: v / len(combinations) for k, v in ((x, sum(1 for _ in y)) for x, y in groups)}
+    probabilities = {
+        k: v / len(combinations) for k, v in ((x, sum(1 for _ in y)) for x, y in groups)
+    }
 
     return probabilities
 
@@ -221,9 +238,10 @@ def collection_probabilities(
     collection: Sequence[Any],
     prev_probabilities: Union[Probabilities, GroupProbabilities],
 ):
+    res = collection_operation(token_type, count, collection)
     if token_type == TokenType.SAMPLES:
         output = group_probabilities(count, prev_probabilities)
-        return collection_operation(token_type, count, collection), output
+        return res, output
 
     if token_type in [TokenType.LARGEST, TokenType.LEAST]:
         if count == 0:
@@ -241,6 +259,6 @@ def collection_probabilities(
             else:
                 probabilities[selected_dice] = chance
 
-        return list(sorted(collection))[-count:], probabilities
+        return res, probabilities
 
     raise NotImplementedError(token_type, count, collection, prev_probabilities)

@@ -21,14 +21,14 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
 ]
 keywords = ["troll", "dice", "interpreter"]
-dependencies = ["typer>=0.6.1", "rich"]
+dependencies = ["rich"]
 requires-python = ">=3.8"
 
 [project.urls]
 Homepage = "https://github.com/gregersn/Trill"
 
 [project.scripts]
-trill = "trill.main:app"
+trill = "trill.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

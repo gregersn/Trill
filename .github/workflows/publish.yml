@@ -3,8 +3,8 @@ name: Create release
 on:
   push:
     tags:
-      - 'v[0-9].[0-9]+.[0-9]+'
-      - 'v[0-9].[0-9]+.[0-9]+.dev[0-9]+'
+      - "v[0-9].[0-9]+.[0-9]+"
+      - "v[0-9].[0-9]+.[0-9]+.dev[0-9]+"
 
 permissions:
   contents: read
@@ -15,7 +15,7 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
@@ -28,9 +28,9 @@ jobs:
       HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Set up Python 3.11
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Install dependencies

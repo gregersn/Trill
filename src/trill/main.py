@@ -1,43 +1,46 @@
 """Run Trill dice roller."""
+
+import argparse
 from pathlib import Path
 from typing import Optional
-import typer
 
-from .tokens import TokenType
-from .tokenizer import Token, Tokenizer
+from .tokenizer import Tokenizer
 from .interpreter import Interpreter
 from .calculator import Calculator
 from .parser import Parser
-from .ast.printer import ASTPrinter
-from .ast.expression import Binary, Grouping, Literal, Unary
 from .error import handler as error_handler
 
-app = typer.Typer(add_completion=False)
+
+def parse_args(arg_list: list[str] | None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source", type=str)
+    parser.add_argument("-a", "--average", default=False, action="store_true")
+    parser.add_argument("-s", "--seed", type=int, default=None)
+    parser.add_argument("-p", "--probabilities", default=False, action="store_true")
+    parser.add_argument("-d", "--digits", type=int, default=3)
+    parser.add_argument("-m", "--multiplier", type=int, default=100)
+
+    args = parser.parse_args(arg_list)
+    return args
 
 
-def main():
-    """Main function."""
-    expression = Binary(
-        Unary(Token(TokenType.MINUS, "-", None, 1, 1), Literal(123)),
-        Token(TokenType.MULTIPLY, "*", None, 1, 2),
-        Grouping(Literal(45.67)),
-    )
-
-    ASTPrinter().print([expression])
-
-
-@app.command()
 def run(
-    source: str = typer.Argument(..., help="Source of dice rolls."),
-    average: bool = typer.Option(False, help="Use average dice values."),
-    seed: Optional[int] = typer.Option(None, help="Set random seed."),
-    probabilities: bool = typer.Option(False, help="Calculate probabilities."),
-    digits: int = typer.Option(3, help="Number of digits in probabilities."),
-    multiplier: int = typer.Option(100, help="Use 100 for percent (default)."),
+    source: str,
+    average: bool = False,
+    seed: Optional[int] = None,
+    probabilities: bool = False,
+    digits: int = 3,
+    multiplier: int = 100,
 ):
     """
     Use SOURCE to roll dice according to the Troll language.
     If SOURCE resolves to an existing file, it will be read and used.
+
+    AVERAGE - Use average dice values
+    SEED - Set random seed
+    PROBABILITIES - Calculate probabilities
+    DIGITS - Number of digits in probabilities
+    MULTIPLIER - Use 100 for percent (default)
     """
     if Path(source).exists():
         with open(Path(source), "r", encoding="utf-8") as f:
@@ -82,7 +85,7 @@ def run(
             table.add_row(
                 f"{value}",
                 f"{round(chance * multiplier, digits):.{digits}f}",
-                f"{round(total  * multiplier, digits):.{digits}f}",
+                f"{round(total * multiplier, digits):.{digits}f}",
                 Bar(1, 0, chance),
             )
 
@@ -96,6 +99,12 @@ def run(
             console.print(f"Spread: {spread}")
         if mean_deviation:
             console.print(f"Mean deviation: {mean_deviation}")
+
+
+def main(arg_list: list[str] | None = None):
+    args = parse_args(arg_list)
+
+    run(args.source, args.average, args.seed, args.probabilities, args.digits, args.multiplier)
 
 
 if __name__ == "__main__":
